@@ -8,10 +8,13 @@ module top
 )
 
 (
-    input wire                   i_clk,
-    input wire  [N_SWITCHES-1:0] i_sw,
-    input wire  [N_BUTTONS-1:0]  i_button,
-    output wire [N_LEDS-1:0]     o_led
+    input wire                   I_clk,
+    input wire  [N_SWITCHES-1:0] I_sw,
+    input wire  [N_BUTTONS-1:0]  I_button,
+    input wire                   reset_button,
+    output wire [N_LEDS-1:0]     O_led,
+    output wire                  O_overflow,
+    output wire                  O_zero
      
 );
 
@@ -25,21 +28,25 @@ module top
         .i_data_a(I_data_a),
         .i_data_b(I_data_b),
         .i_operation_code(I_operation_code),
-        .o_result(o_led)
+        .o_result(O_led),
+        .o_overflow(O_overflow),
+        .o_zero(O_zero)
     );
 
-    always @(posedge i_clk) begin
-        // ToDo: Añadir boton de reset
+    always @(posedge I_clk) begin
+        if (reset_button) begin
+            I_data_a <= {(N_SWITCHES) {1'b0}};
+            I_data_b <= {(N_SWITCHES) {1'b0}};
+            I_operation_code <= {(NB_OPERATIONS) {1'b0}};
+        end
 
-        if(i_button[0]) begin //Pulsador 1
-            I_data_a <= i_sw;
+        if(I_button[0]) begin //Pulsador 1 = Data A
+            I_data_a <= I_sw;
         end
-        if (i_button[1]) begin //Pulsador 2
-            I_data_b <= i_sw;
+        if (I_button[1]) begin //Pulsador 2 = Data B
+            I_data_b <= I_sw;
         end
-        if (i_button[2]) begin //Pulsador 3
-            I_operation_code <= i_sw[NB_OPERATIONS-1:0]; 
+        if (I_button[2]) begin //Pulsador 3 = Operation
+            I_operation_code <= I_sw[NB_OPERATIONS-1:0]; 
         end
     end
-
-endmodule
