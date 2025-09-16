@@ -18,8 +18,9 @@ module top
      
 );
 
-    reg signed I_data_a, I_data_b;
-    reg I_operation_code;
+//Internal signals
+    reg signed [N_SWITCHES-1:0] I_data_a, I_data_b;
+    reg [NB_OPERATIONS-1:0]I_operation_code;
 
     alu #(
         .NB_DATA(N_SWITCHES),
@@ -34,19 +35,25 @@ module top
     );
 
     always @(posedge I_clk) begin
+        
         if (reset_button) begin
             I_data_a <= {(N_SWITCHES) {1'b0}};
             I_data_b <= {(N_SWITCHES) {1'b0}};
             I_operation_code <= {(NB_OPERATIONS) {1'b0}};
         end
-
-        if(I_button[0]) begin //Pulsador 1 = Data A
-            I_data_a <= I_sw;
+        
+        else begin 
+            if (I_button[0]) begin //Pulsador 1 = Data A
+                I_data_a <= I_sw;
+            end
+            if (I_button[1]) begin //Pulsador 2 = Data B
+                I_data_b <= I_sw;
+            end
+            if (I_button[2]) begin //Pulsador 3 = Operation
+                I_operation_code <= I_sw[NB_OPERATIONS-1:0]; 
+            end
         end
-        if (I_button[1]) begin //Pulsador 2 = Data B
-            I_data_b <= I_sw;
-        end
-        if (I_button[2]) begin //Pulsador 3 = Operation
-            I_operation_code <= I_sw[NB_OPERATIONS-1:0]; 
-        end
+        
     end
+      
+endmodule
