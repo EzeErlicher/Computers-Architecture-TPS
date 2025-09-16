@@ -17,6 +17,9 @@ set_property -dict { PACKAGE_PIN U15 IOSTANDARD LVCMOS33 } [get_ports { O_led[5]
 set_property -dict { PACKAGE_PIN U14 IOSTANDARD LVCMOS33 } [get_ports { O_led[6] }];
 set_property -dict { PACKAGE_PIN V14 IOSTANDARD LVCMOS33 } [get_ports { O_led[7] }];
 
+## Overflow and Zero Leds
+set_property -dict { PACKAGE_PIN W3 IOSTANDARD LVCMOS33 } [get_ports { O_overflow }];
+set_property -dict { PACKAGE_PIN U3 IOSTANDARD LVCMOS33 } [get_ports { O_zero }];
 
 ## Buttons
 set_property -dict { PACKAGE_PIN W19 IOSTANDARD LVCMOS33 } [get_ports { I_button[0] }];
