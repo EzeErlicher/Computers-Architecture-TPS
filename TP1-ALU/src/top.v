@@ -15,7 +15,6 @@ module top
     output wire [N_LEDS-1:0]     O_led,
     output wire                  O_overflow,
     output wire                  O_zero
-     
 );
 
 //Internal signals
@@ -41,7 +40,7 @@ module top
             I_data_b <= {(N_SWITCHES) {1'b0}};
             I_operation_code <= {(NB_OPERATIONS) {1'b0}};
         end
-        
+
         else begin 
             if (I_button[0]) begin //Pulsador 1 = Data A
                 I_data_a <= I_sw;
@@ -53,7 +52,7 @@ module top
                 I_operation_code <= I_sw[NB_OPERATIONS-1:0]; 
             end
         end
-        
+
     end
-      
+
 endmodule

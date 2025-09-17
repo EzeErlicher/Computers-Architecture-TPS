@@ -12,10 +12,15 @@ module alu_tb;
     localparam OP_SUB = 6'b100010;
     localparam OP_AND = 6'b100100;
     localparam OP_OR  = 6'b100101;
+    localparam OP_XOR = 6'b100110;
+    localparam OP_SRA = 6'b000011;
+    localparam OP_SRL = 6'b000010;
+    localparam OP_NOR = 6'b100111;
 
     reg  signed [NB_DATA-1:0] data_a, data_b;
     reg         [NB_OP-1:0]   op_code;
     wire signed [NB_DATA-1:0] result;
+    wire overflow, zero;
 
     alu #(
         .NB_DATA(NB_DATA),
@@ -24,7 +29,9 @@ module alu_tb;
         .i_data_a(data_a),
         .i_data_b(data_b),
         .i_operation_code(op_code),
-        .o_result(result)
+        .o_result(result),
+        .o_overflow(overflow),
+        .o_zero(zero)
     );
 
     reg signed [NB_DATA-1:0] A, B, expected;
@@ -51,13 +58,39 @@ module alu_tb;
             run_test(A, B, OP_SUB, expected, "SUB");
 
             // AND
-            expected = A * B;
+            expected = A & B;
             run_test(A, B, OP_AND, expected, "AND");
 
             // OR
-            expected = A / B;
+            expected = A | B;
             run_test(A, B, OP_OR, expected, "OR");
+
+            // XOR
+            expected = A ^ B;
+            run_test(A, B, OP_XOR, expected, "XOR");
+
+            // SRA
+            expected = A >>> B;
+            run_test(A, B, OP_SRA, expected, "SRA");
+
+            // SRL
+            expected = A >> B;
+            run_test(A, B, OP_SRL, expected, "SRL");
+
+            // NOR
+            expected = ~(A | B);
+            run_test(A, B, OP_NOR, expected, "NOR");
         end
+
+        // Casos específicos para overflow y zero
+        // Overflow positivo: 127 + 1 (para 8 bits)
+        run_test(127, 1, OP_ADD, -128, "ADD Overflow Positivo");
+        // Overflow negativo: -128 - 1 (para 8 bits)
+        run_test(-128, -1, OP_SUB, 127, "SUB Overflow Negativo");
+        // Zero: 5 - 5
+        run_test(5, 5, OP_SUB, 0, "SUB Zero");
+        // Zero: 0 & 0
+        run_test(0, 0, OP_AND, 0, "AND Zero");
 
         $finish;
     end
@@ -77,9 +110,9 @@ module alu_tb;
         op_code = op;
         #10;
         if (result !== expected)
-            $display("ERROR: %0s | A=%d, B=%d | Expected=%d, Obtained=%d", op_name, A, B, expected, result);
+            $display("ERROR: %0s | A=%d, B=%d | Expected=%d, Obtained=%d | Overflow=%b, Zero=%b", op_name, A, B, expected, result, overflow, zero);
         else
-            $display("OK: %0s | A=%d, B=%d | Result=%d", op_name, A, B, result);
+            $display("OK: %0s | A=%d, B=%d | Result=%d | Overflow=%b, Zero=%b", op_name, A, B, result, overflow, zero);
     end
     endtask
 

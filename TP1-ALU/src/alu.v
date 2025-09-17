@@ -1,7 +1,7 @@
 module alu
 #(
     parameter NB_DATA=8,
-    parameter NB_OP=6             
+    parameter NB_OP=6
 )
 (
     input wire signed  [NB_DATA-1:0] i_data_a,
@@ -12,29 +12,29 @@ module alu
     output wire o_zero
 );
 
-reg signed [NB_DATA-1:0] result; 
+reg signed [NB_DATA-1:0] result;
 reg ovflw;
 reg z;
 
 always @(*) begin
-    
+
     result  = {NB_DATA{1'b0}};
     ovflw   = 1'b0;
-    
+
     case (i_operation_code)
-       
+
         6'b100000: // ADD
             begin
                 result = i_data_a + i_data_b; 
                 ovflw = (i_data_a[NB_DATA-1]== i_data_b[NB_DATA-1]) & (i_data_a[NB_DATA-1]!=result[NB_DATA-1]);
             end  
-              
+
         6'b100010: // SUB
             begin
                 result = i_data_a - i_data_b;
                 ovflw = (i_data_a[NB_DATA-1]!= i_data_b[NB_DATA-1]) & (i_data_a[NB_DATA-1]!=result[NB_DATA-1]);
             end
-            
+
         6'b100100: result = i_data_a & i_data_b; // AND
         6'b100101: result = i_data_a | i_data_b; // OR
         6'b100110: result = i_data_a ^ i_data_b; //XOR
@@ -43,11 +43,11 @@ always @(*) begin
         6'b100111: result = ~(i_data_a | i_data_b); //NOR
         
         default: result = {NB_DATA{1'b0}};
-    
+
     endcase
-    
+
     z = (result == {NB_DATA{1'b0}});
-    
+
 end
 
 assign o_result = result;
