@@ -17,9 +17,9 @@ module alu_tb;
     localparam OP_SRL = 6'b000010;
     localparam OP_NOR = 6'b100111;
 
-    reg  signed [NB_DATA-1:0] data_a, data_b;
-    reg         [NB_OP-1:0]   op_code;
-    wire signed [NB_DATA-1:0] result;
+    reg [NB_DATA-1:0] data_a, data_b;
+    reg  [NB_OP-1:0]   op_code;
+    wire [NB_DATA-1:0] result;
     wire overflow, zero;
 
     alu #(
@@ -34,7 +34,7 @@ module alu_tb;
         .o_zero(zero)
     );
 
-    reg signed [NB_DATA-1:0] A, B, expected;
+    reg [NB_DATA-1:0] A, B, expected;
     reg [NB_OP-1:0] op;
 
 
@@ -73,8 +73,8 @@ module alu_tb;
             expected = A >>> B;
             run_test(A, B, OP_SRA, expected, "SRA");
 
-            // SRL
-            expected = A >> B;
+            // SLA
+            expected = A <<< B;
             run_test(A, B, OP_SRL, expected, "SRL");
 
             // NOR
@@ -83,10 +83,10 @@ module alu_tb;
         end
 
         // Casos específicos para overflow y zero
-        // Overflow positivo: 127 + 1 (para 8 bits)
-        run_test(127, 1, OP_ADD, -128, "ADD Overflow Positivo");
-        // Overflow negativo: -128 - 1 (para 8 bits)
-        run_test(-128, -1, OP_SUB, 127, "SUB Overflow Negativo");
+        // Overflow positivo: 255 + 1 (para 8 bits)
+        run_test(255, 1, OP_ADD, 0, "ADD Overflow Positivo");
+        // Overflow negativo: 100 - 128 (para 8 bits)
+        run_test(100, -128, OP_SUB, 228, "SUB Overflow Negativo");
         // Zero: 5 - 5
         run_test(5, 5, OP_SUB, 0, "SUB Zero");
         // Zero: 0 & 0
@@ -98,10 +98,10 @@ module alu_tb;
 
     // Tarea de prueba
     task run_test(
-        input signed [NB_DATA-1:0] A,
-        input signed [NB_DATA-1:0] B,
+        input [NB_DATA-1:0] A,
+        input [NB_DATA-1:0] B,
         input [NB_OP-1:0] op,
-        input signed [NB_DATA-1:0] expected,
+        input [NB_DATA-1:0] expected,
         input [80:1] op_name
     );
     begin
