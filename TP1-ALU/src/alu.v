@@ -23,12 +23,12 @@ always @(*) begin
     case (i_operation_code)
         6'b100000: begin // ADD
             result = i_data_a + i_data_b;
-            ovflw  = (result < i_data_a); // overflow if wrap-around
+            ovflw  = (result < i_data_a);
         end
 
         6'b100010: begin // SUB
             result = i_data_a - i_data_b;
-            ovflw  = (i_data_a < i_data_b); // overflow if borrow
+            ovflw  = (i_data_a < i_data_b);
         end
 
         6'b100100: result = i_data_a & i_data_b;  // AND
@@ -49,3 +49,4 @@ assign o_overflow = ovflw;
 assign o_zero     = z;
 
 endmodule
+
