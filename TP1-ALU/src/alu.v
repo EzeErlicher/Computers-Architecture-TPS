@@ -34,8 +34,8 @@ always @(*) begin
         6'b100100: result = i_data_a & i_data_b;  // AND
         6'b100101: result = i_data_a | i_data_b;  // OR
         6'b100110: result = i_data_a ^ i_data_b;  // XOR
-        6'b000011: result = i_data_a << i_data_b; // SLL
-        6'b000010: result = i_data_a >> i_data_b; // SRL
+        6'b000011: result = i_data_a <<< i_data_b; // SLA
+        6'b000010: result = i_data_a >>> i_data_b; // SRA
         6'b100111: result = ~(i_data_a | i_data_b); // NOR
 
         default: result = {NB_DATA{1'b0}};
@@ -49,4 +49,5 @@ assign o_overflow = ovflw;
 assign o_zero     = z;
 
 endmodule
+
 
