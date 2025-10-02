@@ -15,47 +15,51 @@ module alu
 );
 
 
+localparam ADD_OP = 6'b100000;
+localparam SUB_OP = 6'b100010;
+localparam AND_OP = 6'b100100;
+localparam OR_OP = 6'b100101;
+localparam XOR_OP = 6'b100110;
+localparam SRA_OP = 6'b000011;
+localparam SRL_OP = 6'b000010;
+localparam NOR_OP = 6'b100111;
+
+    
 reg signed [NB_DATA-1:0] result; 
 reg ovflw;
 reg z;
 
 
-
 always @(*) begin
-
 
     result  = {NB_DATA{1'b0}};
     ovflw   = 1'b0; 
 
     case (i_operation_code)
 
-
-        6'b100000: // ADD
-
+        ADD_OP: // ADD
             begin
                 result = i_data_a + i_data_b; 
                 ovflw = (i_data_a[NB_DATA-1]== i_data_b[NB_DATA-1]) & (i_data_a[NB_DATA-1]!=result[NB_DATA-1]);
             end  
 
-        6'b100010: // SUB
-
+        SUB_OP: // SUB
             begin
                 result = i_data_a - i_data_b;
                 ovflw = (i_data_a[NB_DATA-1]!= i_data_b[NB_DATA-1]) & (i_data_a[NB_DATA-1]!=result[NB_DATA-1]);
             end
 
+        AND_OP: result = i_data_a & i_data_b; // AND
 
-        6'b100100: result = i_data_a & i_data_b; // AND
+        OR_OP: result = i_data_a | i_data_b; // OR
 
-        6'b100101: result = i_data_a | i_data_b; // OR
+        XOR_OP: result = i_data_a ^ i_data_b; //XOR
 
-        6'b100110: result = i_data_a ^ i_data_b; //XOR
+        SRA_OP: result = i_data_a >>> i_data_b; //SRA
 
-        6'b000011: result = i_data_a >>> i_data_b; //SRA
+        SRL_OP: result = i_data_a >> i_data_b; //SRL
 
-        6'b000010: result = i_data_a >> i_data_b; //SRL
-
-        6'b100111: result = ~(i_data_a | i_data_b); //NOR
+        NOR_OP: result = ~(i_data_a | i_data_b); //NOR
 
         default: result = {NB_DATA{1'b0}};
 
@@ -74,3 +78,4 @@ assign o_zero = z;
 
 
 endmodule
+
