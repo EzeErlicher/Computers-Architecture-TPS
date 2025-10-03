@@ -4,9 +4,9 @@ module baud_rate_gen
         parameter  MOD = 163
     )
     ( 
-        input           clk,
-        input           reset,
-        output          tick
+        input  wire    i_clk,
+        input  wire    i_reset,
+        output wire    o_tick
     ); 
 
     reg  [NB_COUNTER-1:0]  r_counter;

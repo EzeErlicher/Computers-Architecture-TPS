@@ -32,9 +32,9 @@ reg [NB_STOP-1:0]stop_bits_counter , next_stop_bits_counter;
 reg rx_done;
 
 // Actualización de variables
-always @(posedge i_clk)begin
+always @(posedge i_clk) begin
 
-    if(i_reset)begin
+    if (i_reset) begin
         rx_state <= RX_IDLE_STATE;
         data_counter <= 0;
         ticks_counter <= 0;
@@ -67,7 +67,7 @@ always @(*)begin
     
         RX_IDLE_STATE:begin
           
-            if(i_rx == 1'b0)begin
+            if(i_rx == 1'b0) begin
                 next_rx_state=RX_START_STATE;
                 next_ticks_counter=4'b0;
             end
@@ -86,7 +86,7 @@ always @(*)begin
                     next_rx_state=RX_DATA_STATE;
                     next_ticks_counter=4'b0;
                     next_data_counter=3'b0;
-                    next_data={NB_DATA{1'b0}};   
+                    next_data={NB_DATA{1'b0}};
                 end
            end
            
@@ -103,7 +103,6 @@ always @(*)begin
                 end
                 
                 else begin
-             
                     next_ticks_counter=4'b0;
                     next_data={i_rx,data[NB_DATA-1:1]};
                     
@@ -112,12 +111,12 @@ always @(*)begin
                         next_data_counter = 3'b0;
                         next_stop_bits_counter = {NB_STOP{1'b0}};
                     end
+
                     else begin
                         next_data_counter = data_counter + 1;
                     end
                             
                 end
-            
             
             end
         
@@ -125,12 +124,10 @@ always @(*)begin
         
         
         RX_STOP_STATE:begin
-        
             if(i_s_tick) begin
-            
+
                 if(ticks_counter<15)begin
                     next_ticks_counter = ticks_counter + 1;
-                
                 end
                 
                 else begin
@@ -150,13 +147,10 @@ always @(*)begin
         
             end
         
-        
         end
-    
+
         default:next_rx_state=RX_IDLE_STATE;
-        
-        
-        
+
     endcase
 
 end
