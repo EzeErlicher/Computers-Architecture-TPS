@@ -5,48 +5,48 @@ module top #(
     parameter N_LEDS=8
 )
 (
-    input wire                   I_clk,
-    input wire  [N_SWITCHES-1:0] I_sw,
-    input wire  [N_BUTTONS-1:0]  I_button,
+    input wire                   i_clk,
+    input wire  [N_SWITCHES-1:0] i_sw,
+    input wire  [N_BUTTONS-1:0]  i_button,
     input wire                   reset_button,
-    output wire [N_LEDS-1:0]     O_led,
-    output wire                  O_overflow,
-    output wire                  O_zero
+    output wire [N_LEDS-1:0]     o_led,
+    output wire                  o_overflow,
+    output wire                  o_zero
 );
 
 //Internal signals
-    reg signed [N_SWITCHES-1:0] I_data_a, I_data_b;
-    reg [NB_OPERATIONS-1:0]I_operation_code;
+    reg signed [N_SWITCHES-1:0] i_data_a, i_data_b;
+    reg [NB_OPERATIONS-1:0]i_operation_code;
 
     alu #(
         .NB_DATA(N_SWITCHES),
         .NB_OP(NB_OPERATIONS)
     ) alu_unit (
-        .i_data_a(I_data_a),
-        .i_data_b(I_data_b),
-        .i_operation_code(I_operation_code),
-        .o_result(O_led),
-        .o_overflow(O_overflow),
-        .o_zero(O_zero)
+        .i_data_a(i_data_a),
+        .i_data_b(i_data_b),
+        .i_operation_code(i_operation_code),
+        .o_result(o_led),
+        .o_overflow(o_overflow),
+        .o_zero(o_zero)
     );
 
-    always @(posedge I_clk) begin
+    always @(posedge i_clk) begin
 
         if (reset_button) begin
-            I_data_a <= {(N_SWITCHES) {1'b0}};
-            I_data_b <= {(N_SWITCHES) {1'b0}};
-            I_operation_code <= {(NB_OPERATIONS) {1'b0}};
+            i_data_a <= {(N_SWITCHES) {1'b0}};
+            i_data_b <= {(N_SWITCHES) {1'b0}};
+            i_operation_code <= {(NB_OPERATIONS) {1'b0}};
         end
 
         else begin 
-            if (I_button[0]) begin //Pulsador 1 = Data A
-                I_data_a <= I_sw;
+            if (i_button[0]) begin //Pulsador 1 = Data A
+                i_data_a <= i_sw;
             end
-            if (I_button[1]) begin //Pulsador 2 = Data B
-                I_data_b <= I_sw;
+            if (i_button[1]) begin //Pulsador 2 = Data B
+                i_data_b <= i_sw;
             end
-            if (I_button[2]) begin //Pulsador 3 = Operation
-                I_operation_code <= I_sw[NB_OPERATIONS-1:0]; 
+            if (i_button[2]) begin //Pulsador 3 = Operation
+                i_operation_code <= i_sw[NB_OPERATIONS-1:0]; 
             end
         end
 
