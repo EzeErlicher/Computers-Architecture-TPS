@@ -1,7 +1,8 @@
-module rx_mod #(
+module rx_mod 
+#(
 
-    parameter  NB_DATA = 8,
-    parameter  NB_STOP = 1
+    parameter NB_DATA=8,
+    parameter STOP_TICKS = 16
 )
 (
     input wire i_clk,
@@ -9,8 +10,8 @@ module rx_mod #(
     input wire i_rx,
     input wire i_reset,
     
-    output wire [NB_DATA-1:0] o_dout,
-    output wire o_rx_done_tick
+    output wire [NB_DATA-1:0] o_rx_data,
+    output reg o_rx_done_tick
 );
 
 
@@ -21,24 +22,20 @@ localparam RX_DATA_STATE=2'b10;
 localparam RX_STOP_STATE=2'b11;
 
 
-
 // Registros de estado,contador de data,contador de ticks y data
 reg[1:0] rx_state,next_rx_state;
 reg[2:0] data_counter,next_data_counter;
-reg[4:0] ticks_counter,next_ticks_counter;
+reg[3:0] ticks_counter,next_ticks_counter;
 reg[NB_DATA-1:0] data,next_data;
-reg [NB_STOP-1:0]stop_bits_counter , next_stop_bits_counter;
-reg rx_done;
 
 // Actualización de variables
-always @(posedge i_clk) begin
+always @(posedge i_clk,posedge i_reset) begin
 
     if (i_reset) begin
         rx_state <= RX_IDLE_STATE;
         data_counter <= 0;
         ticks_counter <= 0;
         data <= {NB_DATA{1'b0}};
-        stop_bits_counter <= 0;
     end
     
     else begin
@@ -46,7 +43,6 @@ always @(posedge i_clk) begin
         data_counter <= next_data_counter;
         ticks_counter <= next_ticks_counter;
         data <= next_data;
-        stop_bits_counter <= next_stop_bits_counter;
     end
     
 end
@@ -59,16 +55,15 @@ always @(*)begin
     next_data_counter = data_counter;
     next_ticks_counter = ticks_counter;
     next_data = data;
-    next_stop_bits_counter = stop_bits_counter;
-    rx_done = 1'b0;
+    o_rx_done_tick = 1'b0;
     
     case(rx_state)
     
         RX_IDLE_STATE:begin
           
-            if(i_rx == 1'b0) begin
-                next_rx_state=RX_START_STATE;
-                next_ticks_counter=4'b0;
+            if(~i_rx) begin
+                next_rx_state = RX_START_STATE;
+                next_ticks_counter = 4'b0;
             end
             
         end
@@ -77,45 +72,46 @@ always @(*)begin
         
             if(i_s_tick) begin
                 
-                if(ticks_counter<7)begin
-                    next_ticks_counter=ticks_counter+1;
+                if(ticks_counter == 7)begin
+                    next_rx_state = RX_DATA_STATE;
+                    next_ticks_counter = 4'b0;
+                    next_data_counter = 3'b0;
+                    next_data={NB_DATA{1'b0}};
+                    
                 end
             
                 else begin
-                    next_rx_state=RX_DATA_STATE;
-                    next_ticks_counter=4'b0;
-                    next_data_counter=3'b0;
-                    next_data={NB_DATA{1'b0}};
+                    next_ticks_counter = ticks_counter+1;
                 end
            end
            
         end
-        
-            
+                  
         
         RX_DATA_STATE:begin
         
             if(i_s_tick) begin
                 
-                if(ticks_counter<15)begin
-                    next_ticks_counter=ticks_counter+1;
-                end
+                if(ticks_counter == 15)begin
                 
-                else begin
                     next_ticks_counter=4'b0;
                     next_data={i_rx,data[NB_DATA-1:1]};
                     
                     if(data_counter == NB_DATA-1) begin
                         next_rx_state = RX_STOP_STATE;
                         next_data_counter = 3'b0;
-                        next_stop_bits_counter = {NB_STOP{1'b0}};
                     end
-
+                    
                     else begin
-                        next_data_counter = data_counter + 1;
+                        next_ticks_counter = ticks_counter+1;
                     end
-                            
+                    
                 end
+                
+                else begin
+                
+                     next_data_counter = data_counter + 1;
+                end          
             
             end
         
@@ -123,39 +119,32 @@ always @(*)begin
         
         
         RX_STOP_STATE:begin
+        
             if(i_s_tick) begin
-
-                if(ticks_counter<15)begin
-                    next_ticks_counter = ticks_counter + 1;
+            
+                if (ticks_counter == (STOP_TICKS-1))begin
+                    next_ticks_counter = 4'b0;        
+                    next_rx_state = RX_IDLE_STATE;
+                    o_rx_done_tick = 1'b1;
                 end
-                
+              
                 else begin
-                    if(stop_bits_counter<NB_STOP)begin
-                        next_ticks_counter = 4'b0;
-                        next_stop_bits_counter = stop_bits_counter + 1;
-                    end
-                    
-                    else begin
-                        next_ticks_counter = 4'b0;        
-                        next_rx_state = RX_IDLE_STATE;
-                        rx_done = 1'b1;
-                        next_stop_bits_counter = {NB_STOP{1'b0}}; 
-                    end     
-               
+                    next_ticks_counter = ticks_counter + 1;       
                 end
-        
+                            
             end
-        
+           
         end
+       
 
-        default:next_rx_state=RX_IDLE_STATE;
+        default:begin
+            next_rx_state=RX_IDLE_STATE;
+        end
 
     endcase
 
 end
 
-assign o_dout = data;
-assign o_rx_done_tick = rx_done;
-
+assign o_rx_data = data;
 
 endmodule
