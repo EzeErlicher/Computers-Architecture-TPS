@@ -1,8 +1,7 @@
-module rx_mod 
-#(
+module rx_mod #(
 
-    parameter NB_DATA=8,
-    parameter  NB_STOP=1
+    parameter  NB_DATA = 8,
+    parameter  NB_STOP = 1
 )
 (
     input wire i_clk,
