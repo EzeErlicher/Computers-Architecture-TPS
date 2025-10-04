@@ -1,12 +1,9 @@
-module top
-#
-(
+module top #(
     parameter N_SWITCHES=8,
     parameter N_BUTTONS=3,
     parameter NB_OPERATIONS=6,
     parameter N_LEDS=8
 )
-
 (
     input wire                   I_clk,
     input wire  [N_SWITCHES-1:0] I_sw,
@@ -34,7 +31,7 @@ module top
     );
 
     always @(posedge I_clk) begin
-        
+
         if (reset_button) begin
             I_data_a <= {(N_SWITCHES) {1'b0}};
             I_data_b <= {(N_SWITCHES) {1'b0}};
