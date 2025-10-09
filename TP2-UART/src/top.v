@@ -1,5 +1,6 @@
-module top#(
-    parameter NB_DATA = 8,
+module top
+#(
+    parameter NB_DATA   = 8,
     parameter NB_ALU_OP = 6
 )
 (
