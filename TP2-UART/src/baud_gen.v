@@ -1,4 +1,4 @@
-module baud_rate_gen 
+module baud_gen 
   #( 
         parameter  NB_COUNTER =   9,
         parameter  MOD = 163
