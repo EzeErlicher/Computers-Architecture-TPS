@@ -12,8 +12,8 @@ module baud_rate_gen
     reg  [NB_COUNTER-1:0]  r_counter;
     wire [NB_COUNTER-1:0] r_next;
 
-    always @ (posedge clk)begin
-        if (reset)
+  always @ (posedge i_clk)begin
+    if (i_reset)
             r_counter <= 0; 
         else 
             r_counter <= r_next;
