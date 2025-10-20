@@ -24,6 +24,6 @@ module baud_rate_gen
     // Siguiente valor del contador
     assign r_next = last_value ? 0 : r_counter + 1; 
     // Tick pulse
-    assign tick = last_value ? 1'b1 : 1'b0; 
+    assign o_tick = last_value ? 1'b1 : 1'b0; 
 
 endmodule 
