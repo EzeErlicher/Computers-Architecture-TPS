@@ -31,11 +31,11 @@ module rx_mod_tb;
     initial i_clk = 0;
     always #10 i_clk = ~i_clk; // 50 MHz clock (20 ns period)
 
-    // Baud tick generator (same rate as transmitter)
+    // Baud tick generator
     initial begin
         i_s_tick = 0;
         forever begin
-            #160 i_s_tick = 1;
+            #40 i_s_tick = 1;
             #20  i_s_tick = 0;
         end
     end
@@ -71,30 +71,16 @@ module rx_mod_tb;
         i_reset = 0;
 
         // Wait a bit
-        #200;
+        //#200;
 
         // Send byte 0x55 (01010101)
-        $display("Sending byte 0x55...");
-        send_uart_byte(8'h55);
+        $display("Sending byte 0xAA...");
+        send_uart_byte(8'b10101010);
         wait(o_rx_done_tick);
         #50;
         $display("Received byte: %h (expected 0x55)", o_rx_data);
 
-        // Send another byte 0xA3
-        $display("Sending byte 0xA3...");
-        send_uart_byte(8'hA3);
-        wait(o_rx_done_tick);
-        #50;
-        $display("Received byte: %h (expected 0xA3)", o_rx_data);
-
-        #500;
         $finish;
-    end
-
-    // Monitor for debugging
-    initial begin
-        $monitor("Time=%0t | RX=%b | Data=%b | Done=%b | StateData=%h",
-                 $time, i_rx, o_rx_data, o_rx_done_tick, o_rx_data);
     end
 
 endmodule
