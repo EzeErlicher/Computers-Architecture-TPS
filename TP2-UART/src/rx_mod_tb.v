@@ -73,7 +73,7 @@ module rx_mod_tb;
         // Wait a bit
         //#200;
 
-        // Send byte 0x55 (01010101)
+        // Send byte 0xAA
         $display("Sending byte 0xAA...");
         send_uart_byte(8'b10101010);
         wait(o_rx_done_tick);
@@ -84,3 +84,4 @@ module rx_mod_tb;
     end
 
 endmodule
+
