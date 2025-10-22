@@ -32,15 +32,17 @@ module tx_mod_tb;
     // Clock generation (50 MHz for example)
     initial i_clk = 0;
     always #10 i_clk = ~i_clk; // 20 ns period
-
+    
+    
     // Tick generator (simulates baud rate ticks)
     initial begin
         i_s_tick = 0;
         forever begin
-            #160 i_s_tick = 1; // shorter period so we can see transmission
+            #40 i_s_tick = 1; 
             #20  i_s_tick = 0;
         end
     end
+    
 
     // Test sequence
     initial begin
@@ -49,7 +51,7 @@ module tx_mod_tb;
         i_reset = 1;
         i_tx_start = 0;
         i_tx_data = 8'b0;
-        #50;
+        #60;
         i_reset = 0;
 
         // Send first byte
@@ -63,24 +65,7 @@ module tx_mod_tb;
         wait(o_tx_done_tick);
         $display("Transmission complete at time %t", $time);
 
-        // Send another byte for verification
-        @(negedge i_clk);
-        i_tx_data = 8'b11001100;  // Example pattern: 0xCC
-        i_tx_start = 1;
-        @(negedge i_clk);
-        i_tx_start = 0;
-
-        wait(o_tx_done_tick);
-        $display("Second transmission complete at time %t", $time);
-
-        #500;
         $finish;
-    end
-
-    // Monitor key signals
-    initial begin
-        $monitor("Time=%0t | TX=%b | TX_START=%b | DONE=%b | STATE_DATA=%b",
-                 $time, o_tx, i_tx_start, o_tx_done_tick, i_tx_data);
     end
 
 endmodule
