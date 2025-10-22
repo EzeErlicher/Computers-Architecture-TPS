@@ -67,21 +67,20 @@ module rx_mod_tb;
         // Initial conditions
         i_reset = 1;
         i_rx = 1'b1; // line idle (logic high)
-        #50;
+        #100;
         i_reset = 0;
 
-        // Wait a bit
-        //#200;
+        // Wait
+        //#100;
 
-        // Send byte 0xAA
+        // Send byte 0x55 (01010101)
         $display("Sending byte 0xAA...");
-        send_uart_byte(8'b10101010);
-        wait(o_rx_done_tick);
-        #50;
+        send_uart_byte(8'b01010101);
+        @(posedge o_rx_done_tick);
+        #10;
         $display("Received byte: %h (expected 0x55)", o_rx_data);
 
         $finish;
     end
 
 endmodule
-
