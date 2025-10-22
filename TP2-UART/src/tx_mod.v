@@ -98,7 +98,7 @@ always @(*)begin
             
             if(i_s_tick)begin
             
-                if(data_counter == 15)begin
+                if(ticks_counter == 15)begin
                     next_ticks_counter = 4'b0;
                     next_data = data >> 1;
                     if(data_counter == (NB_DATA-1))begin
