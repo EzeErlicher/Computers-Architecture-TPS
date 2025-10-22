@@ -1,7 +1,8 @@
 module baud_gen 
   #( 
-        parameter  NB_COUNTER =   9,
-        parameter  MOD = 163
+        parameter  BAUD_RATE  = 19200,
+        parameter  CLOCK_FREQ = 50_000_000,
+        parameter  NB_COUNTER = 16
     )
     ( 
         input  wire    i_clk,
@@ -9,8 +10,10 @@ module baud_gen
         output wire    o_tick
     ); 
 
+    localparam integer MOD = (CLOCK_FREQ + (BAUD_RATE * 16) - 1) / (BAUD_RATE * 16);
+
     reg  [NB_COUNTER-1:0]  r_counter;
-    wire [NB_COUNTER-1:0] r_next;
+    wire [NB_COUNTER-1:0]  r_next;
 
   always @ (posedge i_clk)begin
     if (i_reset)
