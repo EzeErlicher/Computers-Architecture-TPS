@@ -128,7 +128,7 @@ always @(*) begin
 
         INTF_SEND_STATE: begin
             
-            tx_data = i_alu_res;
+            next_tx_data = i_alu_res;
             next_tx_start = 1'b1;
             next_intf_state = INTF_IDLE_STATE;
 
