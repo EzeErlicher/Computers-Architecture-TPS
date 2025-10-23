@@ -11,7 +11,7 @@ module rx_mod
     input wire i_reset,
     
     output wire [NB_DATA-1:0] o_rx_data,
-    output reg o_rx_done_tick
+    output wire o_rx_done_tick
 );
 
 
@@ -28,6 +28,7 @@ reg[1:0] rx_state,next_rx_state;
 reg[2:0] data_counter,next_data_counter;
 reg[3:0] ticks_counter,next_ticks_counter;
 reg[NB_DATA-1:0] data,next_data;
+reg rx_done;
 
 // Actualización de variables
 always @(posedge i_clk,posedge i_reset) begin
@@ -56,7 +57,7 @@ always @(*)begin
     next_data_counter = data_counter;
     next_ticks_counter = ticks_counter;
     next_data = data;
-    o_rx_done_tick = 1'b0;
+    rx_done = 1'b0;
     
     case(rx_state)
     
@@ -126,7 +127,7 @@ always @(*)begin
                 if (ticks_counter == (STOP_TICKS-1))begin
                     next_ticks_counter = 4'b0;        
                     next_rx_state = RX_IDLE_STATE;
-                    o_rx_done_tick = 1'b1;
+                    rx_done = 1'b1;
                 end
               
                 else begin
@@ -147,5 +148,7 @@ always @(*)begin
 end
 
 assign o_rx_data = data;
+assign o_rx_done_tick = rx_done;
 
 endmodule
+
