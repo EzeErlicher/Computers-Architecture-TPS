@@ -13,7 +13,7 @@ parameter STOP_TICKS = 16
  input wire [NB_DATA-1:0] i_tx_data,
  input wire i_reset,
  
- output reg o_tx_done_tick,
+ output wire o_tx_done_tick,
  output wire o_tx
 
 );
@@ -28,6 +28,7 @@ reg[1:0] tx_state,next_tx_state;
 reg[2:0] data_counter,next_data_counter;
 reg[3:0] ticks_counter,next_ticks_counter;
 reg[NB_DATA-1:0] data,next_data;
+reg tx_done;
 reg tx_reg , tx_next ; //  A 1-bit buffer, is used to filter out any potential glitch
 
 // Actualización de variables
@@ -59,7 +60,7 @@ always @(*)begin
     next_ticks_counter = ticks_counter;
     next_data = data;
     tx_next = tx_reg;
-    o_tx_done_tick = 1'b0;
+    tx_done = 1'b0;
     
     case(tx_state)
     
@@ -128,7 +129,7 @@ always @(*)begin
             
                 if(ticks_counter == (STOP_TICKS-1))begin
                     next_tx_state = TX_IDLE_STATE;
-                    o_tx_done_tick = 1'b1;
+                    tx_done= 1'b1;
                 end
                 
                 else begin
@@ -149,9 +150,11 @@ end
 
 
 assign o_tx = tx_reg;
+assign o_tx_done_tick = tx_done;
 
 
 
 endmodule
+
 
 
