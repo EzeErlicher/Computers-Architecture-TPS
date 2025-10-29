@@ -1,20 +1,20 @@
 module tx_mod
 #(
 
-parameter NB_DATA = 8,
-parameter STOP_TICKS = 16
+    parameter NB_DATA = 8,
+    parameter STOP_TICKS = 16
 
 )
 (
 
- input wire i_clk,
- input wire i_s_tick,
- input wire i_tx_start,
- input wire [NB_DATA-1:0] i_tx_data,
- input wire i_reset,
+    input wire i_clk,
+    input wire i_s_tick,
+    input wire i_tx_start,
+    input wire [NB_DATA-1:0] i_tx_data,
+    input wire i_reset,
  
- output wire o_tx_done_tick,
- output wire o_tx
+    output wire o_tx_done_tick,
+    output wire o_tx
 
 );
 
@@ -24,6 +24,8 @@ localparam TX_START_STATE= 2'b01;
 localparam TX_TRANSMIT_STATE=2'b10;
 localparam TX_STOP_STATE=2'b11;
 
+
+// Registros de estado,contador de data,contador de ticks y data
 reg[1:0] tx_state,next_tx_state;
 reg[2:0] data_counter,next_data_counter;
 reg[3:0] ticks_counter,next_ticks_counter;
@@ -52,7 +54,7 @@ always @(posedge i_clk,posedge i_reset) begin
     
 end
 
-
+//Lógica del siguiente estado
 always @(*)begin
 
     next_tx_state = tx_state;
@@ -147,7 +149,6 @@ always @(*)begin
     endcase
     
 end
-
 
 assign o_tx = tx_reg;
 assign o_tx_done_tick = tx_done;
