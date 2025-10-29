@@ -22,12 +22,24 @@ wire [NB_DATA-1:0] alu_data_A;
 wire [NB_DATA-1:0] alu_data_B;
 wire [NB_DATA-1:0] alu_result;
 
+// Instances
+clk_wiz_0 clk_50MHz
+   (
+    // Clock out ports
+    .clk_out1(clk_out50MHz),     // output clk_out1
+    // Status and control signals
+    .reset(i_reset), // input reset
+    .locked(locked),       // output locked
+   // Clock in ports
+    .clk_in1(i_clk)      // input clk_in1
+);
+
 baud_gen #(
     .BAUD_RATE(19200),
     .CLOCK_FREQ(50_000_000),
     .NB_COUNTER(16)
 ) baud_unit (
-    .i_clk(i_clk),
+    .i_clk(clk_out50MHz),
     .i_reset(i_reset),
     .o_tick(tick)
 );
@@ -36,7 +48,7 @@ rx_mod #(
     .NB_DATA(NB_DATA),
     .STOP_TICKS(16)
 ) rx_unit (
-    .i_clk(i_clk),
+    .i_clk(clk_out50MHz),
     .i_s_tick(tick),
     .i_rx(i_rx),
     .i_reset(i_reset),
@@ -48,7 +60,7 @@ tx_mod #(
     .NB_DATA(NB_DATA),
     .STOP_TICKS(16)
 ) tx_unit (
-    .i_clk(i_clk),
+    .i_clk(clk_out50MHz),
     .i_s_tick(tick),
     .i_tx_start(tx_start),
     .i_tx_data(tx_data),
@@ -61,7 +73,7 @@ interface #(
     .NB_DATA(NB_DATA),
     .NB_ALU_OP(NB_ALU_OP)
 ) interface_unit (
-    .i_clk(i_clk),
+    .i_clk(clk_out50MHz),
     .i_reset(i_reset),
     .i_rx_data(rx_data),
     .i_rx_done(rx_done),
