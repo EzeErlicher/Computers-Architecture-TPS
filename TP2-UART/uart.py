@@ -1,9 +1,11 @@
 import sys
 import serial
 
+
+
 # Configuración prefijada
 BAUDRATE = 19200      # Set baud rate for communication
-SERIAL_PORT = "COM3"  # Establece el puerto COM directamente aquí
+SERIAL_PORT = "COM4"  # Establece el puerto COM directamente aquí
 
 OPCODES = {
     'ADD': bytes([0b00100000]),
@@ -17,10 +19,10 @@ OPCODES = {
 }
 
 ACTIONS = {
-    "SET_A":   bytes([0b00000000]),
-    "SET_B":   bytes([0b00000001]),
-    "SET OP":  bytes([0b00000010]),
-    "GET RES": bytes([0b00000011]),
+    "GET RES":   bytes([0b00000000]),
+    "SET_A":   bytes([0b00000001]),
+    "SET_B":  bytes([0b00000010]),
+    "SET OP": bytes([0b00000011]),
 }
 
 def exit_program() -> None:
@@ -28,7 +30,7 @@ def exit_program() -> None:
     serial_port.close()
     sys.exit()
 
-def get_data(prompt: str, expected_length: int):
+def get_data(prompt: str, expected_length: int, base: int):
     while True:
         user_input = input(prompt).strip()
         
@@ -42,7 +44,7 @@ def get_data(prompt: str, expected_length: int):
         
         # Validate input as an integer and check length
         try:
-            operand = int(user_input)
+            operand = int(user_input,base)
             if len(user_input) == expected_length:
                 return operand
             else:
@@ -60,14 +62,14 @@ loop = True
 
 while loop:
     print("----------------------------------------------")
-    action = get_data("Ingrese la accion deseada:\n 1) SET_A\n 2) SET_B\n 3) SET OP\n 4) GET RES : ", 1)
+    action = get_data("Ingrese la accion deseada:\n 1) SET_A\n 2) SET_B\n 3) SET OP\n 4) GET RES : ", 1,base = 10)
     match action:
         case 1:
-            operand = get_data("Ingrese el valor para A (8 bits binario): ", 8)
+            operand = get_data("Ingrese el valor para A (8 bits binario): ", 8,base=2)
             serial_port.write(ACTIONS["SET_A"])  # Directly send the byte
             serial_port.write(bytes([operand]))  # Directly send the operand
         case 2:
-            operand = get_data("Ingrese el valor para B (8 bits binario): ", 8)
+            operand = get_data("Ingrese el valor para B (8 bits binario): ", 8,base=2)
             serial_port.write(ACTIONS["SET_B"])  # Directly send the byte
             serial_port.write(bytes([operand]))  # Directly send the operand
         case 3:
