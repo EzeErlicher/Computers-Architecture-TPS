@@ -31,7 +31,7 @@ reg[2:0] data_counter,next_data_counter;
 reg[3:0] ticks_counter,next_ticks_counter;
 reg[NB_DATA-1:0] data,next_data;
 reg tx_done;
-reg tx_reg , tx_next ; //  A 1-bit buffer, is used to filter out any potential glitch
+reg tx_reg , tx_next;
 
 // Actualización de variables
 always @(posedge i_clk,posedge i_reset) begin
@@ -156,6 +156,7 @@ assign o_tx_done_tick = tx_done;
 
 
 endmodule
+
 
 
 
