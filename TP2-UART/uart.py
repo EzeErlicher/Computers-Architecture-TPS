@@ -2,7 +2,6 @@ import sys
 import serial
 
 
-
 # Configuración prefijada
 BAUDRATE = 19200      # Set baud rate for communication
 SERIAL_PORT = "COM4"  # Establece el puerto COM directamente aquí
@@ -65,12 +64,12 @@ while loop:
     action = get_data("Ingrese la accion deseada:\n 1) SET_A\n 2) SET_B\n 3) SET OP\n 4) GET RES : ", 1,base = 10)
     match action:
         case 1:
-            operand = get_data("Ingrese el valor para A (8 bits binario): ", 8,base=2)
             serial_port.write(ACTIONS["SET_A"])  # Directly send the byte
+            operand = get_data("Ingrese el valor para A (8 bits binario): ", 8,base=2)
             serial_port.write(bytes([operand]))  # Directly send the operand
         case 2:
-            operand = get_data("Ingrese el valor para B (8 bits binario): ", 8,base=2)
             serial_port.write(ACTIONS["SET_B"])  # Directly send the byte
+            operand = get_data("Ingrese el valor para B (8 bits binario): ", 8,base=2)
             serial_port.write(bytes([operand]))  # Directly send the operand
         case 3:
             operation_str = input("Ingrese la operacion ... ADD, SUB, AND, OR, XOR, NOR, SRA, SRL : ").strip().upper()
