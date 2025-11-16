@@ -17,7 +17,7 @@ module adder_tb;
         .o_result(o_result)
     );
 
-    // Testbench para el sumador
+    // Testbench 
     initial begin
         // Inicializacion
         i_data_A = 0;
