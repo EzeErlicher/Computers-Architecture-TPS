@@ -1,5 +1,3 @@
-`timescale 1ns / 1ps
-
 module mux2to1 #(
     parameter NB_DATA = 32
 )

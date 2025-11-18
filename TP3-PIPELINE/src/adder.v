@@ -1,5 +1,3 @@
-`timescale 1ns / 1ps
-
 module adder #(
     parameter NB_DATA = 32
 )

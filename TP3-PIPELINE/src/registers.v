@@ -1,5 +1,3 @@
-`timescale 1ns / 1ps
-
 module register_bank #(
     parameter NB_DATA = 32,
     parameter NB_REG  = 5
