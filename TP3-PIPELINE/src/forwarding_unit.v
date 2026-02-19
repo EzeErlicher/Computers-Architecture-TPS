@@ -1,7 +1,7 @@
 module forwarding_unit(
 input wire i_reset,
-input wire i_EX_MEM_WB,
-input wire i_MEM_WB_WB,
+input wire i_EX_MEM_reg_write,
+input wire i_MEM_WB_reg_write, // CHANGE THIS
 input wire [4:0]i_ID_EX_rs1,
 input wire [4:0]i_ID_EX_rs2,
 input wire [4:0] i_EX_MEM_rd,
@@ -25,7 +25,7 @@ always @(*)begin
     end
     
     //EX hazard
-    if( (i_EX_MEM_WB) && (i_EX_MEM_rd!=0) )begin
+    if( (i_EX_MEM_reg_write) && (i_EX_MEM_rd!=0) )begin
         
         if(i_EX_MEM_rd == i_ID_EX_rs1)begin
             forward_A =2'b10;   
@@ -37,13 +37,13 @@ always @(*)begin
     end
     
     // MEM hazard
-    else if( (i_MEM_WB_WB) && (i_MEM_WB_rd!=0) ) begin
+    else if( (i_MEM_WB_reg_write) && (i_MEM_WB_rd!=0) ) begin
         
-        if(~(i_EX_MEM_WB && (i_EX_MEM_rd!=0) && (i_EX_MEM_rd == i_ID_EX_rs1)) && i_MEM_WB_rd == i_ID_EX_rs1)begin
+        if(~(i_EX_MEM_reg_write && (i_EX_MEM_rd!=0) && (i_EX_MEM_rd == i_ID_EX_rs1)) && i_MEM_WB_rd == i_ID_EX_rs1)begin
             forward_A = 2'b01;
         end
         
-        if(~(i_EX_MEM_WB && (i_EX_MEM_rd!=0) && (i_EX_MEM_rd == i_ID_EX_rs2)) && i_MEM_WB_rd == i_ID_EX_rs2)begin
+        if(~(i_EX_MEM_reg_write && (i_EX_MEM_rd!=0) && (i_EX_MEM_rd == i_ID_EX_rs2)) && i_MEM_WB_rd == i_ID_EX_rs2)begin
             forward_B = 2'b01;
         end
     end
