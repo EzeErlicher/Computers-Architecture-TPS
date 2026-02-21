@@ -29,6 +29,15 @@ output wire [MEM_WB_SIZE-1:0] o_MEM_WB_data
 localparam CONT_MOD = 2'b01;
 localparam STEP_MOD = 2'b11;
 
+//Bit offsets
+localparam CTRL_LSB = 0;
+localparam RD_DATA_LSB = CTRL_LSB + 2;
+localparam ALU_LSB = RD_DATA_LSB + NB_INSTRUCT;
+localparam RD_LSB = ALU_LSB + NB_INSTRUCT;
+localparam PIPEMODE_LSB = RD_LSB + 5;
+localparam EXEC_INST_BIT = PIPEMODE_LSB + 2;
+localparam EOF_BIT = EXEC_INST_BIT + 1;
+
 //Auxiliar variables;
 reg [1:0]control_bits;
 reg [NB_INSTRUCT-1:0] read_data;
@@ -49,13 +58,13 @@ always@(posedge i_clk,posedge i_reset)begin
     end
     
     else if(i_pipeline_mode == CONT_MOD || (i_pipeline_mode == STEP_MOD && i_execute_instruct))begin
-        MEM_WB_data[1:0] <= i_control_bits;
-        MEM_WB_data[33:2] <= i_read_data;
-        MEM_WB_data[65:34] <= i_alu_result;
-        MEM_WB_data[70:66] <= i_instruct_11_7;
-        MEM_WB_data[72:71] <= i_pipeline_mode;
-        MEM_WB_data[73] <= i_execute_instruct;
-        MEM_WB_data[74] <= i_EOF_flag;
+        MEM_WB_data[CTRL_LSB +: 2] <= i_control_bits;
+        MEM_WB_data[RD_DATA_LSB +: NB_INSTRUCT] <= i_read_data;
+        MEM_WB_data[ALU_LSB +: NB_INSTRUCT] <= i_alu_result;
+        MEM_WB_data[RD_LSB +: 5] <= i_instruct_11_7;
+        MEM_WB_data[PIPEMODE_LSB +: 2] <= i_pipeline_mode;
+        MEM_WB_data[EXEC_BIT] <= i_execute_instruct;
+        MEM_WB_data[EOF_BIT] <= i_EOF_flag;
         
         control_bits <= i_control_bits;
         read_data <= i_read_data;

@@ -2,7 +2,7 @@ module EX_MEM_latch #(
 
 parameter NB_INSTRUCT = 32,
 parameter NB_PC = 6,
-parameter EX_MEM_SIZE = 85
+parameter EX_MEM_SIZE = 79 + NB_PC
 )
 (
 //Inputs
@@ -30,9 +30,19 @@ output wire [EX_MEM_SIZE-1:0] o_EX_MEM_data
 
 );
 
-//localparam
 localparam CONT_MODE = 2'b01;
 localparam STEP_MODE = 2'b11; 
+
+//Bit offsets
+localparam CTRL_LSB = 0;
+localparam ZERO_LSB = CTRL_LSB + 5;
+localparam SUM_LSB = ZERO_LSB + 1;
+localparam ALU_LSB = SUM_LSB + NB_PC;
+localparam RD2_LSB = ALU_LSB + NB_INSTRUCT;
+localparam RD_LSB = RD2_LSB + NB_INSTRUCT;
+localparam PIPEMODE_LSB = RD_LSB + 5;
+localparam EXEC_INST_BIT = PIPEMODE_LSB + 2;
+localparam EOF_BIT = EXEC_INST_BIT + 1;
 
 //Auxiliar variables;
 reg [4:0]control_bits;
@@ -58,15 +68,15 @@ always@(posedge i_clk,posedge i_reset)begin
     end
     
     else if (i_pipeline_mode == CONT_MODE || (i_pipeline_mode == STEP_MODE && i_execute_instruct)) begin
-        EX_MEM_data[4:0] <= i_control_bits; 
-        EX_MEM_data[5] <= i_zero;
-        EX_MEM_data[11:6] <= i_sum;
-        EX_MEM_data[43:12] <= i_alu_result;
-        EX_MEM_data[75:44] <= i_read_data2;
-        EX_MEM_data[80:76] <= i_instruct_11_7;
-        EX_MEM_data[82:81] <= i_pipeline_mode;
-        EX_MEM_data[83] <= i_execute_instruct;
-        EX_MEM_data[84] <= i_EOF_flag;
+        EX_MEM_data[CTRL_LSB +: 5] <= i_control_bits; 
+        EX_MEM_data[ZERO_LSB] <= i_zero;
+        EX_MEM_data[SUM_LSB +: NB_PC] <= i_sum;
+        EX_MEM_data[ALU_LSB +: NB_INSTRUCT] <= i_alu_result;
+        EX_MEM_data[RD2_LSB +: NB_INSTRUCT] <= i_read_data2;
+        EX_MEM_data[RD_LSB +: 5] <= i_instruct_11_7;
+        EX_MEM_data[PIPEMODE_LSB +: 2] <= i_pipeline_mode;
+        EX_MEM_data[EXEC_INST_BIT] <= i_execute_instruct;
+        EX_MEM_data[EOF_BIT] <= i_EOF_flag;
         
         control_bits <= i_control_bits;
         zero <= i_zero;
