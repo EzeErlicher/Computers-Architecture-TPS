@@ -1,42 +1,37 @@
-
-// https://chipdemy.com/verilog-memory/
 module instruction_memory #(
-
-// memoria  de 512 slots =512*32bits= 2048bytes
-    parameter PC_WIDTH = 9, 
-    parameter NB_WIDTH = 32
-
+// Memoria  de 1024 bytes por defecto ((2**10)*8 bits) --> Hasta 256 instrucciones de 32 bits
+    parameter PC_BITS = 10, 
+    parameter IMEM_WIDTH = 8,
+    parameter IMEM_DEPTH = 2**PC_BITS
 )
 (
-    input  wire                i_clk,
-    input  wire                i_reset,
-    input  wire                i_write_enable,
-    input  wire [PC_WIDTH-1:0] i_address,
-    input  wire [NB_WIDTH-1:0] write_register,
-    output wire [NB_WIDTH-1:0] o_instruction
+input wire i_clk,
+input wire i_instruct_mem_write_enable,
+input wire[PC_BITS-1:0] i_address,
+input wire[4*IMEM_WIDTH-1:0] i_instruction,
+output wire[4*IMEM_WIDTH-1:0] o_instruction
+
 );
 
-parameter DEPTH = 2**PC_WIDTH;
+reg[IMEM_WIDTH-1:0]ram_mem[IMEM_DEPTH-1:0];
+reg [4*IMEM_WIDTH-1:0]instruction;
 
-reg [NB_WIDTH-1:0] out_instruction;
-reg [NB_WIDTH-1:0] ram_mem [DEPTH-1:0];
-
+// Force word alignment
+wire [PC_BITS-1:0] address = {i_address[PC_BITS-1:2], 2'b00};
 
 always @(posedge i_clk) begin
-
-    if(i_reset) begin
-        ram_mem[i_address] <= {NB_WIDTH {1'b0}};
+    if(i_instruct_mem_write_enable)begin
+        ram_mem[address] <= i_instruction[IMEM_WIDTH-1:0];
+        ram_mem[address+1] <= i_instruction[2*IMEM_WIDTH-1:0];
+        ram_mem[address+2] <= i_instruction[3*IMEM_WIDTH-1:0];
+        ram_mem[address+3] <= i_instruction[4*IMEM_WIDTH-1:0];
     end
-
-    else if(i_write_enable) begin
-        ram_mem[i_address] <= write_register;   
-    end
-
+    
     else begin
-        out_instruction <= ram_mem[i_address];
-    end
+        instruction <= {ram_mem[address + 3],ram_mem[address + 2], ram_mem[address + 1],ram_mem[address]};
+    end       
 end
 
-assign o_instruction = out_instruction;
+assign o_instruction = instruction;
 
 endmodule
