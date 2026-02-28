@@ -1,5 +1,5 @@
 module adder #(
-    parameter NB_DATA = 32
+    parameter NB_DATA = 10
 )
 (
     input wire  [NB_DATA-1:0] i_data_A,
