@@ -272,7 +272,7 @@ always @(posedge i_clk,posedge i_reset)begin
                     state <= WAIT_FOR_COMMAND;
                 end
                 
-                if(send_pipeline_data_flag)begin
+                else if(send_pipeline_data_flag)begin
                     state <= SEND_REGISTERS;
                     send_pipeline_data_flag <= 1'b0;
                     return_to_run_stepwise <=1'b1;
