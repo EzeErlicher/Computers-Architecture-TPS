@@ -5,15 +5,15 @@ module instruction_memory #(
     parameter IMEM_DEPTH = 2**PC_BITS
 )
 (
-input wire i_clk,
-input wire i_instruct_mem_write_enable,
-input wire[PC_BITS-1:0] i_address,
-input wire[4*IMEM_WIDTH-1:0] i_instruction,
-output wire[4*IMEM_WIDTH-1:0] o_instruction
+input wire                    i_clk,
+input wire                    i_instruct_mem_write_enable,
+input wire [PC_BITS-1:0]      i_address,
+input wire [4*IMEM_WIDTH-1:0] i_instruction,
 
+output wire [4*IMEM_WIDTH-1:0] o_instruction
 );
 
-reg[IMEM_WIDTH-1:0]ram_mem[IMEM_DEPTH-1:0];
+reg [IMEM_WIDTH-1:0] ram_mem [IMEM_DEPTH-1:0];
 reg [4*IMEM_WIDTH-1:0]instruction;
 
 // Force word alignment
@@ -29,7 +29,7 @@ always @(posedge i_clk) begin
     
     else begin
         instruction <= {ram_mem[address + 3],ram_mem[address + 2], ram_mem[address + 1],ram_mem[address]};
-    end       
+    end
 end
 
 assign o_instruction = instruction;

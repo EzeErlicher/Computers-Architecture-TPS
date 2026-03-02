@@ -1,15 +1,15 @@
 module PC #(
-parameter NB_PC = 10
+    parameter NB_PC = 10
 )
 (
 //Inputs
 input wire i_clk,
 input wire i_reset,
 input wire i_PCWrite,
-input wire [NB_PC-1:0]i_PC,
+input wire [NB_PC-1:0] i_PC,
 
 //Outputs
-output wire[NB_PC-1:0]o_PC
+output wire [NB_PC-1:0] o_PC
 );
 
 reg [NB_PC-1:0] out_PC;
@@ -22,7 +22,7 @@ always@(posedge i_clk,posedge i_reset) begin
     
     else begin
         if(i_PCWrite)begin
-            out_PC<=i_PC;    
+            out_PC<=i_PC;
         end
     end    
 end

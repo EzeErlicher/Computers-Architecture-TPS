@@ -7,15 +7,15 @@ module instruction_fetch_top #(
     input wire i_reset,
     input wire i_PCSource,
     input wire i_PCWrite,
-    input wire [PC_BITS-1:0]i_ID_adder_result,
     input wire i_instruct_mem_write_enable,
-    input wire [NB_INSTRUCTION-1:0]i_instruct,
+    input wire [PC_BITS-1:0]        i_EX_adder_result,
+    input wire [NB_INSTRUCTION-1:0] i_instruct,
          
-    output wire [PC_BITS-1:0] o_PC,
+    output wire [PC_BITS-1:0]        o_PC,
     output wire [NB_INSTRUCTION-1:0] o_instruction
 );
 
-wire [PC_BITS-1:0]out_IF_adder;
+wire [PC_BITS-1:0] out_IF_adder;
 wire [PC_BITS-1:0] out_mux;
 
 mux2to1 #(
@@ -23,7 +23,7 @@ mux2to1 #(
 ) mux_unit
 (
     .i_data_A(out_IF_adder),
-    .i_data_B(i_ID_adder_result),
+    .i_data_B(i_EX_adder_result),
     .i_select(i_PCSource),
     .o_data(out_mux)
 );
@@ -59,6 +59,5 @@ instruction_memory #(
     .i_instruction(i_instruct),
     .o_instruction(o_instruction)
 );
-
 
 endmodule
