@@ -3,13 +3,15 @@ module instruction_fetch_top #(
     parameter NB_INSTRUCTION  = 32
 )
 (
-    input wire i_clk,
-    input wire i_reset,
-    input wire i_PCSource,
-    input wire i_PCWrite,
-    input wire i_instruct_mem_write_enable,
-    input wire [PC_BITS-1:0]        i_EX_adder_result,
-    input wire [NB_INSTRUCTION-1:0] i_instruct,
+    input wire               i_clk,
+    input wire               i_reset,
+    input wire               i_PC_source,
+    input wire               i_PC_enable,
+    input wire [PC_BITS-1:0] i_EX_adder_result,
+
+    input wire                      i_instruct_mem_write_enable,
+    input wire [PC_BITS-1:0]        i_instruct_mem_write_address,
+    input wire [NB_INSTRUCTION-1:0] i_instruct_mem_write_instruct,
          
     output wire [PC_BITS-1:0]        o_PC,
     output wire [NB_INSTRUCTION-1:0] o_instruction
@@ -24,7 +26,7 @@ mux2to1 #(
 (
     .i_data_A(out_IF_adder),
     .i_data_B(i_EX_adder_result),
-    .i_select(i_PCSource),
+    .i_select(i_PC_source),
     .o_data(out_mux)
 );
 
@@ -34,9 +36,9 @@ PC #(
 (
     .i_clk(i_clk),
     .i_reset(i_reset),
-    .i_PCWrite(i_PCWrite),
-    .i_PC(out_mux),
-    .o_PC(o_PC)
+    .i_PC_enable(i_PC_enable),
+    .i_address(out_mux),
+    .o_address(o_PC)
 );
 
 adder #(
@@ -54,9 +56,9 @@ instruction_memory #(
 ) instruct_memory
 (
     .i_clk(i_clk),
+    .i_address(i_instruct_mem_write_address),
     .i_instruct_mem_write_enable(i_instruct_mem_write_enable),
-    .i_address(o_PC),
-    .i_instruction(i_instruct),
+    .i_instruction(i_instruct_mem_write_instruct),
     .o_instruction(o_instruction)
 );
 
