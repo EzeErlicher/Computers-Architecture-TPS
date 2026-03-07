@@ -2,59 +2,140 @@
 
 module instruction_memory_tb;
 
-    parameter PC_WIDTH = 9;
-    parameter NB_WIDTH = 32;
-    parameter DEPTH = 2**PC_WIDTH;
+    parameter PC_BITS = 8;
+    parameter IMEM_WIDTH = 32;
+    parameter IMEM_DEPTH = 2**PC_BITS;
 
-    reg                 i_clk;
-    reg                 i_reset;
-    reg                 i_write_enable;
-    reg  [PC_WIDTH-1:0] i_address;
-    reg  [NB_WIDTH-1:0] write_register;
-    wire [NB_WIDTH-1:0] o_instruction;
+    reg                     i_clk;
+    reg  [PC_BITS-1:0]      i_read_address;
+    reg                     i_write_enable;
+    reg  [PC_BITS-1:0]      i_write_address;
+    reg  [IMEM_WIDTH-1:0]   i_write_instruction;
+    wire [IMEM_WIDTH-1:0]   o_instruction;
 
-    reg [NB_WIDTH-1:0] prev_instruction;
+    reg  [IMEM_WIDTH-1:0]   expected_data;
+    reg  [PC_BITS-1:0]      addr;
+    reg  [7:0]              i;
+    reg  [31:0]             test_pass = 0;
+    reg  [31:0]             test_fail = 0;
 
     instruction_memory #(
-        .PC_WIDTH(PC_WIDTH),
-        .NB_WIDTH(NB_WIDTH)
+        .PC_BITS(PC_BITS),
+        .IMEM_WIDTH(IMEM_WIDTH),
+        .IMEM_DEPTH(IMEM_DEPTH)
     ) dut (
         .i_clk(i_clk),
-        .i_reset(i_reset),
+        .i_read_address(i_read_address),
         .i_write_enable(i_write_enable),
-        .i_address(i_address),
-        .write_register(write_register),
+        .i_write_address(i_write_address),
+        .i_write_instruction(i_write_instruction),
         .o_instruction(o_instruction)
     );
 
     always #10 i_clk = ~i_clk;
-
+    
     initial begin
-        i_clk = 0;
-        i_address = 0;
-        i_write_enable = 0;
-        write_register = 0;
-        i_reset = 0;
+        #80; // Initial delay for stabilization
 
-        #100
-        
-        // Load a few instructions and read them back
-        for (integer i = 0; i < 10; i = i + 1) begin
-            i_address = $random % DEPTH;
-            write_register = $random;
+        i_clk = 0;
+        i_read_address = 0;
+        i_write_enable = 0;
+        i_write_address = 0;
+        i_write_instruction = 0;
+
+        #10;
+        $display("\n===== INSTRUCTION MEMORY TESTBENCH =====\n");
+
+        // TEST 1: Multiple Random Write/Read Operations
+        $display("--- TEST 1: Random Write/Read Operations ---");
+        for (i = 0; i < 10; i = i + 1) begin
+            addr = $random % IMEM_DEPTH;
+            expected_data = $random;
+            
+            i_write_address = addr;
+            i_write_instruction = expected_data;
             i_write_enable = 1;
             #20;
             i_write_enable = 0;
+            i_read_address = addr;
             #20;
-            $display("Write %h to addr %d, read back: %h | Status: %s", write_register, i_address, o_instruction, (o_instruction === write_register) ? "OK" : "ERR");
+            
+            $display("[WRITE] Addr = %4d, Data = %h -> Read = %h | Status: %s", 
+                     addr, expected_data, o_instruction, 
+                     (o_instruction === expected_data) ? "OK" : "ERR");
+            
+            if (o_instruction === expected_data)
+                test_pass = test_pass + 1;
+            else
+                test_fail = test_fail + 1;
         end
 
-        // Test reset with last written address
-        i_reset = 1;
+        // TEST 2: Address Range Verification
+        $display("\n--- TEST 2: Address Range Verification ---");
+        for (i = 0; i < 4; i = i + 1) begin
+            addr = (i * 256);
+            expected_data = {16'hAAAA, i[7:0], 8'h55};
+            
+            i_write_address = addr;
+            i_write_instruction = expected_data;
+            i_write_enable = 1;
+            #20;
+            i_write_enable = 0;
+            i_read_address = addr;
+            #20;
+            
+            $display("[RANGE] Addr = %4d, Data = %h -> Read = %h | Status: %s", 
+                     addr, expected_data, o_instruction, 
+                     (o_instruction === expected_data) ? "OK" : "ERR");
+            
+            if (o_instruction === expected_data)
+                test_pass = test_pass + 1;
+            else
+                test_fail = test_fail + 1;
+        end
+
+        // TEST 3: Edge Cases
+        $display("\n--- TEST 3: Edge Cases ---");
+        
+        // Test at address 0
+        addr = 10'd0;
+        expected_data = 32'hDEADBEEF;
+        i_write_address = addr;
+        i_write_instruction = expected_data;
+        i_write_enable = 1;
         #20;
-        i_reset = 0;
+        i_write_enable = 0;
+        i_read_address = addr;
         #20;
-        $display("After reset at addr %d: %h (expected 0)  | Status: %s", i_address, o_instruction, (o_instruction === 0) ? "OK" : "ERR");
+        $display("[EDGE] Addr = %4d, Data = %h -> Read = %h | Status: %s", 
+                 addr, expected_data, o_instruction, 
+                 (o_instruction === expected_data) ? "OK" : "ERR");
+        if (o_instruction === expected_data)
+            test_pass = test_pass + 1;
+        else
+            test_fail = test_fail + 1;
+        
+        // Test at max address
+        addr = (IMEM_DEPTH - 1);
+        expected_data = 32'hCAFEBABE;
+        i_write_address = addr;
+        i_write_instruction = expected_data;
+        i_write_enable = 1;
+        #20;
+        i_write_enable = 0;
+        i_read_address = addr;
+        #20;
+        $display("[EDGE] Addr = %4d, Data = %h -> Read = %h | Status: %s", 
+                 addr, expected_data, o_instruction, 
+                 (o_instruction === expected_data) ? "OK" : "ERR");
+        if (o_instruction === expected_data)
+            test_pass = test_pass + 1;
+        else
+            test_fail = test_fail + 1;
+
+        $display("\n========================================");
+        $display("SUMMARY: PASSED = %d | FAILED = %d", test_pass, test_fail);
+        $display("========================================\n");
 
         $finish;
     end

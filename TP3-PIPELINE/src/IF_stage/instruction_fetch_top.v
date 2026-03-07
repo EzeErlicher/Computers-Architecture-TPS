@@ -38,7 +38,7 @@ PC #(
     .i_reset(i_reset),
     .i_PC_enable(i_PC_enable),
     .i_address(out_mux),
-    .o_address(o_PC)
+    .o_PC(o_PC)
 );
 
 adder #(
@@ -52,13 +52,13 @@ adder #(
 
 instruction_memory #(
     .PC_BITS(PC_BITS),
-    .IMEM_WIDTH(8)
-) instruct_memory
-(
+    .IMEM_WIDTH(NB_INSTRUCTION)
+) instruct_memory (
     .i_clk(i_clk),
-    .i_address(i_instruct_mem_write_address),
-    .i_instruct_mem_write_enable(i_instruct_mem_write_enable),
-    .i_instruction(i_instruct_mem_write_instruct),
+    .i_read_address(o_PC),
+    .i_write_enable(i_instruct_mem_write_enable),
+    .i_write_address(i_instruct_mem_write_address),
+    .i_write_instruction(i_instruct_mem_write_instruct),
     .o_instruction(o_instruction)
 );
 

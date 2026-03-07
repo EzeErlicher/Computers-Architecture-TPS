@@ -2,7 +2,7 @@
 
 module PC_tb;
 
-    parameter NB_DATA = 32;
+    parameter NB_DATA = 10;
 
     reg                i_clk;
     reg                i_reset;
@@ -35,7 +35,7 @@ module PC_tb;
 
         // Test multiple writes
         for (integer i = 0; i < 10; i = i + 1) begin
-            expected_adress = $random & 32'hFFFFFFFF;
+            expected_adress = $random & 10'h3FF;
             i_adress = expected_adress;
             i_PC_enable = 1;
             #10;
@@ -45,7 +45,7 @@ module PC_tb;
 
             // Test no write (PC should hold)
             prev_adress = o_PC;
-            i_adress = $random & 32'hFFFFFFFF; // Change input but no write
+            i_adress = $random & 10'h3FF; // Change input but no write
             #10;
             $display("[HOLD] o_PC = %10d | Expected: %10d | Status: %s", o_PC, prev_adress, (o_PC === prev_adress) ? "OK" : "ERR");
         end
