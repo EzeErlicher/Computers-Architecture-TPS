@@ -7,11 +7,11 @@ module PC_tb;
     reg                i_clk;
     reg                i_reset;
     reg                i_PC_enable;
-    reg  [NB_DATA-1:0] i_adress;
+    reg  [NB_DATA-1:0] i_address;
     wire [NB_DATA-1:0] o_PC;
 
-    reg  [NB_DATA-1:0] expected_adress;
-    reg  [NB_DATA-1:0] prev_adress;
+    reg  [NB_DATA-1:0] expected_address;
+    reg  [NB_DATA-1:0] prev_address;
 
     PC #(
         .NB_DATA(NB_DATA)
@@ -19,7 +19,7 @@ module PC_tb;
         .i_clk(i_clk),
         .i_reset(i_reset),
         .i_PC_enable(i_PC_enable),
-        .i_address(i_adress),
+        .i_address(i_address),
         .o_PC(o_PC)
     );
 
@@ -28,26 +28,26 @@ module PC_tb;
     initial begin
         i_clk = 0; i_reset = 1;
         i_PC_enable = 0;
-        i_adress = 0;
+        i_address = 0;
 
         #10;
         i_reset = 0;
 
         // Test multiple writes
         for (integer i = 0; i < 10; i = i + 1) begin
-            expected_adress = $random & 10'h3FF;
-            i_adress = expected_adress;
+            expected_address = $random & 10'h3FF;
+            i_address = expected_address;
             i_PC_enable = 1;
             #10;
             i_PC_enable = 0;
             #10;
-            $display("[WRITE] i_adress = %10d -> o_PC = %10d | Status: %s", expected_adress, o_PC, (o_PC === expected_adress) ? "OK" : "ERR");
+            $display("[WRITE] i_address = %10d -> o_PC = %10d | Status: %s", expected_address, o_PC, (o_PC === expected_address) ? "OK" : "ERR");
 
             // Test no write (PC should hold)
-            prev_adress = o_PC;
-            i_adress = $random & 10'h3FF; // Change input but no write
+            prev_address = o_PC;
+            i_address = $random & 10'h3FF; // Change input but no write
             #10;
-            $display("[HOLD] o_PC = %10d | Expected: %10d | Status: %s", o_PC, prev_adress, (o_PC === prev_adress) ? "OK" : "ERR");
+            $display("[HOLD] o_PC = %10d | Expected: %10d | Status: %s", o_PC, prev_address, (o_PC === prev_address) ? "OK" : "ERR");
         end
 
         // Test reset

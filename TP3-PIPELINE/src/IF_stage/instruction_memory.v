@@ -1,25 +1,26 @@
 module instruction_memory #(
-// Memoria de 
-    parameter PC_BITS = 10, 
-    parameter IMEM_WIDTH = 32,
-    parameter IMEM_DEPTH = 2**PC_BITS
+// Memoria de 2**10 direcciones, cada una almacena 1 byte
+    parameter NB_ADDRESS = 10, 
+    parameter INSTR_WIDTH = 32
 )
 (
-input wire                  i_clk,
-input wire [PC_BITS-1:0]    i_read_address,
+input wire                   i_clk,
+input wire [NB_ADDRESS-1:0]  i_read_address,
 
-input wire                  i_write_enable,
-input wire [PC_BITS-1:0]    i_write_address,
-input wire [IMEM_WIDTH-1:0] i_write_instruction,
-input wire [1:0]            i_write_byte_enable,
+input wire                   i_write_enable,
+input wire [NB_ADDRESS-1:0]  i_write_address,
+input wire [INSTR_WIDTH-1:0] i_write_instruction,
+input wire [1:0]             i_write_byte_enable,
 
-output wire [IMEM_WIDTH-1:0] o_instruction
+output wire [INSTR_WIDTH-1:0] o_instruction
 );
 
 localparam BYTE_WIDTH = 8;
+localparam IMEM_DEPTH = 2**NB_ADDRESS;
 
 reg [BYTE_WIDTH-1:0] ram_mem [IMEM_DEPTH-1:0];
-reg [IMEM_WIDTH-1:0] instruction;
+
+assign o_instruction = {ram_mem[i_read_address + 3], ram_mem[i_read_address + 2], ram_mem[i_read_address + 1], ram_mem[i_read_address]};
 
 always @(posedge i_clk) begin
 
@@ -33,11 +34,7 @@ always @(posedge i_clk) begin
         endcase
     end
 
-    else begin
-        instruction <= {ram_mem[i_read_address + 3], ram_mem[i_read_address + 2], ram_mem[i_read_address + 1], ram_mem[i_read_address]};
-    end
 end
 
-assign o_instruction = instruction;
 
 endmodule

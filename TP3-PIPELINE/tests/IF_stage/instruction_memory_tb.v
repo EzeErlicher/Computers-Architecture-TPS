@@ -2,28 +2,28 @@
 
 module instruction_memory_tb;
 
-    parameter PC_BITS = 10;
-    parameter IMEM_WIDTH = 32;              // Byte width
-    parameter INSTR_WIDTH = 32;            // Instruction width (4 bytes)
-    parameter IMEM_DEPTH = 2**PC_BITS;
+    localparam NB_ADDRESS = 10;
+    localparam INSTR_WIDTH = 32;            // Instruction width (4 bytes)
+    localparam IMEM_DEPTH = 2**NB_ADDRESS;
 
     reg                     i_clk;
-    reg  [PC_BITS-1:0]      i_read_address;
+    reg  [NB_ADDRESS-1:0]    i_read_address;
     reg                     i_write_enable;
-    reg  [PC_BITS-1:0]      i_write_address;
+    reg  [NB_ADDRESS-1:0]    i_write_address;
     reg  [INSTR_WIDTH-1:0]  i_write_instruction;
     reg  [1:0]              i_write_byte_enable;
     wire [INSTR_WIDTH-1:0]  o_instruction;
 
     reg  [INSTR_WIDTH-1:0]  expected_data;
-    reg  [PC_BITS-1:0]      addr;
+    reg  [NB_ADDRESS-1:0]    addr;
+
     integer i;
     integer test_pass = 0;
     integer test_fail = 0;
 
     instruction_memory #(
-        .PC_BITS(PC_BITS),
-        .IMEM_WIDTH(IMEM_WIDTH)
+        .NB_ADDRESS(NB_ADDRESS),
+        .INSTR_WIDTH(INSTR_WIDTH)
     ) dut (
         .i_clk(i_clk),
         .i_read_address(i_read_address),
@@ -47,7 +47,7 @@ module instruction_memory_tb;
 
         #10;
         
-                $display("\n===== INSTRUCTION MEMORY TESTBENCH =====\n");
+        $display("\n===== INSTRUCTION MEMORY TESTBENCH =====\n");
 
         // TEST 1: Multiple Random Write/Read Operations
         $display("--- TEST 1: Random Write/Read Operations ---");
