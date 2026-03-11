@@ -205,14 +205,12 @@ always @(posedge i_clk,posedge i_reset)begin
                         else if(send_mem_index_or_value == 0)begin
                             pipeline_info <= memory_address;
                             send_mem_index_or_value <= 1'b1;
-                            rx_buffer_start <= 1'b1;
                         end
                         
                         else begin
                             pipeline_info <= i_memory_value;
                             send_mem_index_or_value <= 1'b0;
                             memory_address <= memory_address+1;
-                            rx_buffer_start <= 1'b1;
                         end
                     end
                 end
@@ -242,7 +240,6 @@ always @(posedge i_clk,posedge i_reset)begin
                     else begin
                         if(i_rx_buffer_empty)begin
                             pipeline_info <= latches_info_array[latches_sent_counter][latch_words_sent +: 32];
-                            rx_buffer_start <= 1'b1;
                             latch_words_sent <= latch_words_sent + 1;
                         end  
                     end 
@@ -255,7 +252,6 @@ always @(posedge i_clk,posedge i_reset)begin
                 if (i_program_finished)begin
                     pipeline_exec_mode <= 2'b00;
                     pipeline_info <= 32'hffffffff;
-                    rx_buffer_start <= 1'b1;
                     state <= SEND_REGISTERS;
                 end
             end
@@ -267,7 +263,6 @@ always @(posedge i_clk,posedge i_reset)begin
                 if (i_program_finished)begin
                     pipeline_exec_mode <= 2'b00;
                     pipeline_info <= 32'hffffffff;
-                    rx_buffer_start <= 1'b1;
                     execute_instruct <= 1'b0; 
                     state <= WAIT_FOR_COMMAND;
                 end
