@@ -50,12 +50,12 @@ localparam RUN_CONTINUOS = 9'b010000000;
 localparam RUN_STEPWISE = 9'b100000000;
 
 //Commands
-localparam [INSTRUCT_MEM_WIDTH-1:0] start_continuos = "cont";
-localparam [INSTRUCT_MEM_WIDTH-1:0] start_stepwise = "step";
-localparam [INSTRUCT_MEM_WIDTH-1:0] execute_an_instruct = "exin";
-localparam [INSTRUCT_MEM_WIDTH-1:0] receive_instructions = "rins";
-localparam [INSTRUCT_MEM_WIDTH-1:0] fetch_pipeline_data = "fpip";
-localparam [INSTRUCT_MEM_WIDTH-1:0] instructs_eof = "ieof";
+localparam [INSTRUCT_MEM_WIDTH-1:0] run_continuous           = 8'b00000001;
+localparam [INSTRUCT_MEM_WIDTH-1:0] run_stepwise             = 8'b00000010;
+localparam [INSTRUCT_MEM_WIDTH-1:0] execute_next_instruction = 8'b00000011;
+localparam [INSTRUCT_MEM_WIDTH-1:0] receive_instructions     = 8'b00000100;
+localparam [INSTRUCT_MEM_WIDTH-1:0] fetch_pipeline_data      = 8'b00000101;
+localparam [INSTRUCT_MEM_WIDTH-1:0] instructs_eof            = 8'b00000110;
 
 // Auxiliar variables
 reg [INSTRUCT_MEM_WIDTH-1:0] instructions [2**INSTRUCT_MEM_ADDR_BITS-1:0];
@@ -125,12 +125,12 @@ always @(posedge i_clk,posedge i_reset)begin
                     state <= SEND_REGISTERS;
                 end
             
-                else if (instructions[0] == start_continuos)begin
+                else if (instructions[0] == run_continuous)begin
                     state <= RUN_CONTINUOS;
                     pipeline_exec_mode <= 2'b01;
                 end
                 
-                else if (instructions[0] == start_stepwise)begin
+                else if (instructions[0] == run_stepwise)begin
                     state <= RUN_STEPWISE;
                     pipeline_exec_mode <= 2'b11;
                     execute_instruct <= 1'b0;
@@ -275,7 +275,7 @@ always @(posedge i_clk,posedge i_reset)begin
                     return_to_run_stepwise <=1'b1;
                 end
                 
-                else if(i_tx_buffer_done == 1'b1 && i_instruct_or_command == execute_an_instruct )begin
+                else if(i_tx_buffer_done == 1'b1 && i_instruct_or_command == execute_next_instruction )begin
                      execute_instruct <= 1'b1;
                      send_pipeline_data_flag <= 1'b1;                     
                 end
