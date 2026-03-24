@@ -5,7 +5,7 @@ parameter REG_BANK_ADDR_BITS = 5, // Tamaño por defecto del banco de registros 
 parameter DATA_MEM_WIDTH = 32,
 parameter DATA_MEM_ADDR_BITS = 8 ,// Tamaño por defecto de la memoria de datos = 256
 parameter INSTRUCT_MEM_WIDTH = 32,
-parameter INSTRUCT_MEM_ADDR_BITS = 6, // Tamaño por defecto de la memoria de instrucciones = 64
+parameter INSTRUCT_MEM_ADDR_BITS = 10, // Tamaño por defecto de la memoria de instrucciones = 64
 parameter IF_ID_SIZE = 44, // 1+1+2+32+6+1+1
 parameter ID_EX_SIZE = 156, // 1+1+2+5+4+64+32+32+6+9
 parameter EX_MEM_SIZE = 85, // 1+1+2+5+32+32+6+1+5
@@ -18,8 +18,8 @@ input wire i_reset,
 input wire [REG_BANK_WIDTH-1:0]i_register_value,
 input wire [DATA_MEM_WIDTH-1:0]i_memory_value,
 input wire [INSTRUCT_MEM_WIDTH-1:0]i_instruct_or_command,
-input wire i_tx_buffer_done, 
-input wire i_rx_buffer_empty,
+input wire i_rx_buffer_done, 
+input wire i_tx_buffer_empty,
 input wire i_program_finished,
 input wire [IF_ID_SIZE-1:0]i_IF_ID_content,
 input wire [ID_EX_SIZE-1:0]i_ID_EX_content,
@@ -30,10 +30,11 @@ input wire [MEM_WB_SIZE-1:0]i_MEM_WB_content,
 output wire [REG_BANK_ADDR_BITS-1:0]o_register_address,
 output wire [DATA_MEM_ADDR_BITS-1:0]o_memory_address,
 output wire o_instruct_mem_write_enable,
-output wire [INSTRUCT_MEM_WIDTH-1:0]o_instruct_to_write,
+output wire [1:0]o_instruct_mem_write_byte_enable,
+output wire [7:0]o_instruct_byte_to_write,
 output wire [INSTRUCT_MEM_ADDR_BITS-1:0]o_instruct_to_write_addr,
 output wire [INSTRUCT_MEM_WIDTH-1:0]o_pipeline_info,
-output wire o_rx_buffer_start,
+output wire o_tx_buffer_start,
 output wire [1:0]o_pipeline_exec_mode,
 output wire o_execute_instruct
 );
@@ -61,17 +62,18 @@ localparam [INSTRUCT_MEM_WIDTH-1:0] instructs_eof            = 8'b00000110;
 reg [INSTRUCT_MEM_WIDTH-1:0] instructions [2**INSTRUCT_MEM_ADDR_BITS-1:0];
 reg [8:0]state;
 reg [INSTRUCT_MEM_ADDR_BITS-1:0] inst_counter;
-reg [INSTRUCT_MEM_WIDTH-1:0] instruct_to_write;
+reg [7:0] instruct_byte_to_write;
 reg [REG_BANK_ADDR_BITS:0] register_address;
 reg [DATA_MEM_ADDR_BITS:0] memory_address;
 reg instruct_mem_write_enable;
+reg [1:0] instruct_mem_write_byte_enable;
 reg send_mem_index_or_value; // 0: index, 1:value
 reg [2:0] latches_sent_counter;
 reg [7:0] latch_words_sent;
 reg [ID_EX_SIZE+31:0] latches_info_array [3:0];
 reg [31:0] current_latch_size;
 reg [INSTRUCT_MEM_WIDTH-1:0] pipeline_info;
-reg rx_buffer_start;
+reg tx_buffer_start;
 reg [1:0] pipeline_exec_mode;
 reg execute_instruct;
 reg send_pipeline_data_flag;
@@ -81,15 +83,16 @@ always @(posedge i_clk,posedge i_reset)begin
     if (i_reset) begin
         state <= WAIT_FOR_COMMAND;
         inst_counter <= 0;
-        instruct_to_write <= {INSTRUCT_MEM_WIDTH{1'b0}};
+        instruct_byte_to_write <= 0;
         register_address <= 0;
         memory_address <= 0;
         instruct_mem_write_enable <= 0;
+        instruct_mem_write_byte_enable <= 2'b00;
         send_mem_index_or_value <= 0;
         latches_sent_counter <= 0;
         latch_words_sent <= 0;
         pipeline_info <= 0;
-        rx_buffer_start <= 1'b0;
+        tx_buffer_start <= 1'b0;
         pipeline_exec_mode <= 2'b0;
         execute_instruct <= 1'b0; 
         send_pipeline_data_flag <= 1'b0; 
@@ -97,11 +100,11 @@ always @(posedge i_clk,posedge i_reset)begin
     end
     
     else begin
-        rx_buffer_start <= 1'b0;
+        tx_buffer_start <= 1'b0;
         
         case(state)
             WAIT_FOR_COMMAND:begin
-                if(i_tx_buffer_done == 1'b1)begin
+                if(i_rx_buffer_done == 1'b1)begin
                     instructions[0] <= i_instruct_or_command;
                     state <= INTERPRET_COMMAND;
                 end
@@ -143,13 +146,14 @@ always @(posedge i_clk,posedge i_reset)begin
             end
             
             RECEIVE_INSTRUCTS: begin
-                if(i_tx_buffer_done)begin
+                if(i_rx_buffer_done)begin
                     instructions[inst_counter] <= i_instruct_or_command;
                     
                     if(i_instruct_or_command == instructs_eof)begin
                         inst_counter <= {INSTRUCT_MEM_ADDR_BITS{1'b0}};
                         state <= PROGRAM_INSTRUCT_MEM;
                         instruct_mem_write_enable <= 1'b1;
+                        instruct_mem_write_byte_enable <= 2'b00;
                     end
                     
                     else begin
@@ -159,17 +163,25 @@ always @(posedge i_clk,posedge i_reset)begin
             end
             
             PROGRAM_INSTRUCT_MEM: begin
-                instruct_to_write <= instructions[inst_counter];
-                // add write enable signal
+                instruct_byte_to_write <= instructions[inst_counter][instruct_mem_write_byte_enable*8 +: 8];
+
                 if(instructions[inst_counter] == instructs_eof)begin
                     inst_counter <= {INSTRUCT_MEM_ADDR_BITS{1'b0}};
                     state <= WAIT_FOR_COMMAND;
                     instruct_mem_write_enable <= 1'b0;
+                    instruct_mem_write_byte_enable <= 2'b00;
                 end
             
                 else begin
-                    inst_counter <= inst_counter + 1;
-                end    
+                    if(instruct_mem_write_byte_enable == 2'b11)begin
+                        instruct_mem_write_byte_enable <= 2'b00;
+                        inst_counter <= inst_counter + 1;
+                    end
+                    
+                    else begin
+                        instruct_mem_write_byte_enable <= instruct_mem_write_byte_enable + 1;
+                    end
+                end   
             end
              
             SEND_REGISTERS:begin
@@ -181,9 +193,9 @@ always @(posedge i_clk,posedge i_reset)begin
                 end
                 
                 else begin
-                    if (i_rx_buffer_empty)begin
+                    if (i_tx_buffer_empty)begin
                         pipeline_info <= i_register_value;
-                        rx_buffer_start <= 1'b1;
+                        tx_buffer_start <= 1'b1;
                         register_address <= register_address+1;
                     end
                 end   
@@ -199,18 +211,20 @@ always @(posedge i_clk,posedge i_reset)begin
                 end
                 
                 else begin
-                    if (i_rx_buffer_empty)begin
+                    if (i_tx_buffer_empty)begin
                         if(i_memory_value == 0) begin
                             memory_address <= memory_address+1;
                         end
                                               
                         else if(send_mem_index_or_value == 0)begin
                             pipeline_info <= memory_address;
+                            tx_buffer_start <= 1'b1;
                             send_mem_index_or_value <= 1'b1;
                         end
                         
                         else begin
                             pipeline_info <= i_memory_value;
+                            tx_buffer_start <= 1'b1;
                             send_mem_index_or_value <= 1'b0;
                             memory_address <= memory_address+1;
                         end
@@ -240,8 +254,9 @@ always @(posedge i_clk,posedge i_reset)begin
                     end
                 
                     else begin
-                        if(i_rx_buffer_empty)begin
-                            pipeline_info <= latches_info_array[latches_sent_counter][latch_words_sent +: 32];
+                        if(i_tx_buffer_empty)begin
+                            pipeline_info <= latches_info_array[latches_sent_counter][latch_words_sent*32 +: 32];
+                            tx_buffer_start <= 1'b1;
                             latch_words_sent <= latch_words_sent + 1;
                         end  
                     end 
@@ -275,7 +290,7 @@ always @(posedge i_clk,posedge i_reset)begin
                     return_to_run_stepwise <=1'b1;
                 end
                 
-                else if(i_tx_buffer_done == 1'b1 && i_instruct_or_command == execute_next_instruction )begin
+                else if(i_rx_buffer_done == 1'b1 && i_instruct_or_command == execute_next_instruction )begin
                      execute_instruct <= 1'b1;
                      send_pipeline_data_flag <= 1'b1;                     
                 end
@@ -298,13 +313,14 @@ always @(*)begin
     endcase
 end
 
-assign o_instruct_to_write = instruct_to_write; 
+assign o_instruct_byte_to_write = instruct_byte_to_write; 
 assign o_instruct_to_write_addr = inst_counter;
 assign o_register_address = register_address[REG_BANK_ADDR_BITS-1:0];
 assign o_memory_address = memory_address[DATA_MEM_ADDR_BITS-1:0];
 assign o_instruct_mem_write_enable = instruct_mem_write_enable;
+assign o_instruct_mem_write_byte_enable = instruct_mem_write_byte_enable;
 assign o_pipeline_info = pipeline_info;
-assign o_rx_buffer_start = rx_buffer_start;
+assign o_tx_buffer_start = tx_buffer_start;
 assign o_pipeline_exec_mode = pipeline_exec_mode;
 assign o_execute_instruct = execute_instruct;
 

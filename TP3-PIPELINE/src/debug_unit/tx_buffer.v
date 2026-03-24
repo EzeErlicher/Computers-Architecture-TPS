@@ -1,49 +1,63 @@
 module tx_buffer #(
+
 parameter INSTRUCT_MEM_WIDTH = 32
 )
+
 (
 //Inputs
 input wire i_clk,
 input wire i_reset,
+input wire i_tx_buffer_start,
 input wire i_tx_done,
-input wire i_tx_data,
+input wire [INSTRUCT_MEM_WIDTH-1:0]i_pipeline_info,
 
 //Outputs
-output [INSTRUCT_MEM_WIDTH-1:0]o_instruct_or_command,
-output o_tx_buffer_done
+output wire o_tx_buffer_empty,
+output wire [7:0]o_tx_data
 );
 
-reg [5:0]received_bits_counter;
-reg [INSTRUCT_MEM_WIDTH-1:0] instruct_or_command;
-reg tx_buffer_done;
+reg [INSTRUCT_MEM_WIDTH-1:0]tx_buffer_data;
+reg [7:0]byte_to_send;
+reg tx_buffer_empty;
+reg [2:0]sent_bytes_counter;
 
-always @(posedge i_clk, posedge i_reset)begin
-    
-    if(i_reset)begin
-        received_bits_counter <= 0;
-        instruct_or_command <= 0; 
-        tx_buffer_done <= 1'b0;
+always @(posedge i_clk,posedge i_reset)begin
+
+    if (i_reset)begin
+        tx_buffer_data <= 0;
+        byte_to_send <= 1'b0;
+        tx_buffer_empty <= 1'b1;
+        sent_bytes_counter <= 0;    
     end
-
+    
+    else if(i_tx_buffer_start) begin
+        tx_buffer_empty <= 1'b0;
+        tx_buffer_data <= i_pipeline_info;
+        byte_to_send <= i_pipeline_info[0+:8]; 
+        sent_bytes_counter <= 3'b001;              
+    end
+    
     else begin
-        tx_buffer_done <= 1'b0;
-              
         if(i_tx_done)begin
-            if(received_bits_counter == INSTRUCT_MEM_WIDTH-1)begin
-                instruct_or_command[received_bits_counter] <= i_tx_data;
-                received_bits_counter <= 0;
-                tx_buffer_done <= 1'b1;
+            if(sent_bytes_counter == 4) begin
+                tx_buffer_data <= 0;
+                tx_buffer_empty <= 1'b1;
+                sent_bytes_counter <= 3'b000;
+                byte_to_send <= 0;  
             end
             
             else begin
-                instruct_or_command[received_bits_counter] <= i_tx_data;
-                received_bits_counter <= received_bits_counter + 1;
+                byte_to_send <= tx_buffer_data[8*sent_bytes_counter+:8]; 
+                sent_bytes_counter <= sent_bytes_counter + 1; 
             end
         end
-    end
+    end  
 end
 
-assign o_tx_buffer_done = tx_buffer_done;
-assign o_instruct_or_command = instruct_or_command;
+assign o_tx_buffer_empty = tx_buffer_empty;
+assign o_tx_data = byte_to_send;
 
 endmodule
+
+
+
