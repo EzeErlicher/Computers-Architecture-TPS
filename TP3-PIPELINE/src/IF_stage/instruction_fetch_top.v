@@ -9,10 +9,13 @@ module instruction_fetch_top #(
     input wire               i_PC_enable,
     input wire [NB_ADDRESS-1:0] i_EX_adder_result,
 
+    
+    input wire [NB_ADDRESS-1:0]     i_instruct_to_write_addr,
+    input wire [NB_INSTRUCTION-1:0] i_instruct_to_write,
     input wire                      i_instruct_mem_write_enable,
-    input wire [NB_ADDRESS-1:0]        i_instruct_mem_write_address,
-    input wire [NB_INSTRUCTION-1:0] i_instruct_mem_write_instruct,
     input wire [1:0]                i_instruct_mem_write_byte_enable,
+    input wire [1:0]                i_pipeline_exec_mode,
+    input wire                      i_execute_instruct,
          
     output wire [NB_ADDRESS-1:0]        o_PC,
     output wire [NB_INSTRUCTION-1:0] o_instruction
@@ -22,7 +25,7 @@ wire [NB_ADDRESS-1:0] out_IF_adder;
 wire [NB_ADDRESS-1:0] out_mux;
 
 mux2to1 #(
-    .NB_DATA(NB_INSTRUCTION)
+    .NB_DATA(NB_ADDRESS)
 ) mux_unit
 (
     .i_data_A(out_IF_adder),
@@ -37,8 +40,10 @@ PC #(
 (
     .i_clk(i_clk),
     .i_reset(i_reset),
-    .i_PC_enable(i_PC_enable),
-    .i_address(out_mux),
+    .i_PCWrite(i_PC_enable),
+    .i_PC(out_mux),
+    .i_pipeline_exec_mode(i_pipeline_exec_mode),
+    .i_execute_instruct(i_execute_instruct),
     .o_PC(o_PC)
 );
 
@@ -58,10 +63,9 @@ instruction_memory #(
     .i_clk(i_clk),
     .i_read_address(o_PC),
     .i_write_enable(i_instruct_mem_write_enable),
-    .i_write_address(i_instruct_mem_write_address),
-    .i_write_instruction(i_instruct_mem_write_instruct),
+    .i_write_address(i_instruct_to_write_addr),
+    .i_write_instruction(i_instruct_to_write),
     .i_write_byte_enable(i_instruct_mem_write_byte_enable),
     .o_instruction(o_instruction)
 );
-
 endmodule
