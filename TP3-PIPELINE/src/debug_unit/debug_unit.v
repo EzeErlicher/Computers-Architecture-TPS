@@ -19,6 +19,8 @@ input  wire [7:0]  I_rx_data,
 input  wire        I_rx_done,
 input  wire        I_tx_done,
 output wire [7:0]  O_tx_data,
+output wire        O_tx_start,
+
 // Pipeline side
 input  wire [REG_BANK_WIDTH-1:0]  I_register_value,
 input  wire [DATA_MEM_WIDTH-1:0]  I_memory_value,
@@ -100,7 +102,8 @@ tx_buffer #(
     .i_tx_done(I_tx_done),
     .i_pipeline_info(pipeline_info),
     .o_tx_buffer_empty(tx_buffer_empty),
-    .o_tx_data(O_tx_data)
+    .o_tx_data(O_tx_data),
+    .o_tx_start(O_tx_start)
 );
 
 endmodule
