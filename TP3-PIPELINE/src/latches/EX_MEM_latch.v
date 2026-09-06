@@ -1,7 +1,7 @@
 module EX_MEM_latch #(
 
 parameter NB_INSTRUCT = 32,
-parameter NB_PC = 6,
+parameter NB_PC = 10,
 parameter EX_MEM_SIZE = 79 + NB_PC
 )
 (

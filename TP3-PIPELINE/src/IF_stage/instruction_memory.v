@@ -1,5 +1,5 @@
 module instruction_memory #(
-// Memoria de 2**10 direcciones, cada una almacena 1 byte
+// 2**10 memory, each address stores 1 byte
     parameter NB_ADDRESS = 10, 
     parameter INSTR_WIDTH = 32
 )

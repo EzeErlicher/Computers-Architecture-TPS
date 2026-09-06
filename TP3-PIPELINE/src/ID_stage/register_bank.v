@@ -11,8 +11,8 @@ module register_bank #(
     input  wire [NB_DATA-1:0] i_write_data,
     input  wire               i_write_enable,
 
-    output wire [NB_DATA-1:0] o_register1,
-    output wire [NB_DATA-1:0] o_register2
+    output wire [NB_DATA-1:0] o_data1,
+    output wire [NB_DATA-1:0] o_data2
 );
 
 reg [NB_DATA-1:0] registers [2**NB_REG-1:0];

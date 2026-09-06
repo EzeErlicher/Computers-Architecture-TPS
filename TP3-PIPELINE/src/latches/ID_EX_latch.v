@@ -1,7 +1,7 @@
 module ID_EX_latch #(
 
 parameter NB_INSTRUCT = 32,
-parameter NB_PC = 6,
+parameter NB_PC = 10,
 parameter ID_EX_SIZE = 150 + NB_PC
 )
 (

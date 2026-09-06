@@ -1,7 +1,7 @@
 module MEM_WB_latch #(
 
 parameter NB_INSTRUCT = 32,
-parameter NB_PC = 6,
+parameter NB_PC = 10,
 parameter MEM_WB_SIZE = 75
 )
 (
