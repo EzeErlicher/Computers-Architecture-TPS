@@ -32,7 +32,7 @@ always @(negedge i_clk) begin
     end
 end
 
-assign o_register1 = registers[i_read_reg1];
-assign o_register2 = registers[i_read_reg2];
+assign o_data1 = registers[i_read_reg1];
+assign o_data2 = registers[i_read_reg2];
 
 endmodule
