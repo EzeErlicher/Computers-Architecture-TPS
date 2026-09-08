@@ -17,6 +17,7 @@ input wire [4:0] i_instruct_11_7,
 input wire i_EOF_flag,
 input wire [1:0] i_pipeline_mode, // 01: continuos, 11: stepwise
 input wire i_execute_instruct,
+input wire i_flush,
 
 //Outputs
 output wire [8:0]o_control_bits,
@@ -57,7 +58,7 @@ reg EOF_flag;
 reg [ID_EX_SIZE-1:0] ID_EX_data; 
 
 always@(posedge i_clk,posedge i_reset)begin
-    if(i_reset)begin
+    if(i_reset || i_flush)begin
         control_bits <= 0;
         PC <= 0;
         read_data1 <= 0;

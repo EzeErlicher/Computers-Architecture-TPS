@@ -110,7 +110,4 @@ assign o_ctrl_bits[5] = jump;
 assign o_ctrl_bits[6] = ALUSrc;
 assign o_ctrl_bits[8:7] = ALUOp;
 
-
-
-
 endmodule
