@@ -17,7 +17,7 @@ reg PC_write;
 reg flush_ctrl_signals;
 
 always @(*)begin
-    if (i_ID_EX_rd && ((i_ID_EX_rd == i_IF_ID_rs1)||(i_ID_EX_rd == i_IF_ID_rs2))  )begin
+    if (i_ID_EX_MemRead && i_ID_EX_rd && ((i_ID_EX_rd == i_IF_ID_rs1) || (i_ID_EX_rd == i_IF_ID_rs2)) ) begin
         // stall pipeline
         IF_ID_write = 1'b0;
         PC_write =1'b0;
@@ -32,7 +32,7 @@ always @(*)begin
     
 end
 
-assign o_IF_ID_write = o_IF_ID_write;
+assign o_IF_ID_write = IF_ID_write;
 assign o_PC_write = PC_write;
 assign o_flush_ctrl_signals = flush_ctrl_signals;
 
