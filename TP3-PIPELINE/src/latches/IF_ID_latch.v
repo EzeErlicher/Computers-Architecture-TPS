@@ -11,7 +11,7 @@ module IF_ID_latch #(
     input wire i_IF_ID_write,
     input wire [NB_PC-1:0] i_PC,
     input wire [NB_INSTRUCT-1:0] i_instruction,
-    input wire [1:0] i_pipeline_mode, // 01: stepwise , 11: continuous
+    input wire [1:0] i_pipeline_mode, // 01: continuos , 11: stepwise
     input wire i_execute_instruct,
     
     //Outputs
@@ -42,22 +42,14 @@ reg [IF_ID_SIZE-1:0] IF_ID_data;
 always @(posedge i_clk or posedge i_reset) begin
     if (i_reset || i_IF_flush) begin
         instruction <= {NB_INSTRUCT{1'b0}};
-        PC <= {NB_PC{1'b0}}; // review this
+        PC <= {NB_PC{1'b0}};
         EOF_flag <= 1'b0;
-        
-        if (i_reset) begin
-            IF_ID_data <= {IF_ID_SIZE{1'b0}};
-        end
-        
-        else begin
-            IF_ID_data[0]<= i_IF_flush;
-            IF_ID_data[1] <= i_IF_ID_write;
-            IF_ID_data[PC_LSB +: NB_PC]<= i_PC;
-            IF_ID_data[INSTR_LSB +: NB_INSTRUCT]<= i_instruction;
-            IF_ID_data[PIPEMODE_LSB +: 2] <= i_pipeline_mode;
-            IF_ID_data[EXEC_INST_BIT] <= i_execute_instruct;
-            IF_ID_data[EOF_BIT]  <= (i_instruction == instructs_eof);
-        end
+        IF_ID_data[PC_LSB +: NB_PC]< =0;
+        IF_ID_data[INSTR_LSB +: NB_INSTRUCT]<= 0;
+        IF_ID_data[PIPEMODE_LSB +: 2] <= 0;
+        IF_ID_data[EXEC_INST_BIT] <= 0;
+        IF_ID_data[EOF_BIT]  <= 0;
+        // everything in IF_ID_data is zeroed except for i_IF_flush and i_IF_ID_write
     end
     
     else if (i_IF_ID_write && (i_pipeline_mode == CONT_MODE || (i_pipeline_mode == STEP_MODE && i_execute_instruct)) )begin
