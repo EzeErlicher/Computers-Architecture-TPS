@@ -5,7 +5,7 @@ parameter NB_INSTRUCT = 32
 
 (
 input wire [NB_INSTRUCT-1:0]i_instruction,
-output wire [8:0] o_ctrl_bits
+output wire [10:0] o_ctrl_bits
 );
 
 //SLL, SRL, SRA, SLL, SRL, SRA, ADD, 
@@ -40,6 +40,8 @@ reg mem_read;
 reg mem_write; 
 reg branch;
 reg jump;
+reg branch_dst_src;
+reg lui;
 reg [1:0] ALUOp;
 
 always @(*) begin
@@ -50,6 +52,8 @@ always @(*) begin
     mem_write = 0; 
     branch = 0;
     jump = 0;
+    branch_dst_src = 0;
+    lui = 0;
     ALUOp = 0;
 
     case (i_instruction[6:0])
@@ -81,10 +85,13 @@ always @(*) begin
             ALUSrc  = 1'b1;
             reg_write = 1'b1;
             jump = 1'b1;
+            branch_dst_src = 1'b1;
         end
         
         U_TYPE_OP_CODE:begin
+            ALUSrc = 1'b1;
             reg_write = 1'b1;
+            lui = 1'b1;
         end
         
         UJ_TYPE_OP_CODE:begin
@@ -101,13 +108,15 @@ always @(*) begin
 
 end
 
-assign o_ctrl_bits[0] = mem_to_reg;
-assign o_ctrl_bits[1]= reg_write;
-assign o_ctrl_bits[2] = mem_write;
+assign o_ctrl_bits[0] = ALUSrc;
+assign o_ctrl_bits[1]= mem_to_reg;
+assign o_ctrl_bits[2] = reg_write;
 assign o_ctrl_bits[3]= mem_read;
-assign o_ctrl_bits[4] = branch; 
-assign o_ctrl_bits[5] = jump;
-assign o_ctrl_bits[6] = ALUSrc;
-assign o_ctrl_bits[8:7] = ALUOp;
+assign o_ctrl_bits[4] = mem_write; 
+assign o_ctrl_bits[5] = branch;
+assign o_ctrl_bits[6] = jump;
+assign o_ctrl_bits[7] = branch_dst_src;
+assign o_ctrl_bits[8] = lui;
+assign o_ctrl_bits[10:9] = ALUOp;
 
 endmodule
