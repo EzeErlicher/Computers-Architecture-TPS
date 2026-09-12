@@ -27,7 +27,7 @@ always @(negedge i_clk) begin
         end
     end
 
-    else if (i_write_enable) begin
+    else if (i_write_enable && i_write_reg != 0) begin
         registers[i_write_reg] <= i_write_data;
     end
 end
